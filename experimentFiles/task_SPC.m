@@ -100,16 +100,20 @@ for trial = 1:nTrials
     
     % Get confidence:
     if confYN
-        
+            
         % Fixation Screen:
         Screen('DrawDots', w, fixPos, fixSize_pix, fixCol, [0 0], 2);
         stimulusFinishTime = Screen('Flip', w); % record when stimulus finshed playing
         % INSERT GAZE CONTROL HERE
         
         % collect response:
-        respKey = NaN;
-        while ~(respKey == leftKey || respKey == rightKey)
-            respKey = key_resp(-1);
+        if trial == 1
+            respKey = quickDrawText(w,confTxt,'keyPress',[leftKey, rightKey]);
+        else
+            respKey = NaN;
+            while ~(respKey == leftKey || respKey == rightKey)
+                respKey = key_resp(-1);
+            end
         end
         
         % Record timing of response:
