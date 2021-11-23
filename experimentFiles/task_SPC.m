@@ -7,6 +7,11 @@
 % EXPERIMENT SET-UP
 % ----------------- %
 
+% Set random seed:
+rng('shuffle'); % can be set to 0 if Matlab just launched, so repeat...
+disp('Setting random seed...') % introduce a little time variability between calls
+randomSeed = rng('shuffle'); % final seed setting
+
 % Set fps manually if on laptop:
 if strcmp(testLocation,'laptop')
     hardware.fps = 60;
@@ -148,8 +153,11 @@ end
 % SAVE AND FINAL INSTRUCTIONS
 % --------------------------- %
 
-% Save results:
+% Save testing information:
 expData.hardware.testLocation{resprowidx,phase} = testLocation;
+expData.hardware.randomSeed{resprowidx,phase} = randomSeed;
+
+% Save results:
 expData.res.tval{resprowidx,phase} = 0:(1/hardware.fps):nFrames;
 expData.res.targX{resprowidx,phase} = targ / pixPerDeg;
 expData.res.dotPosX{resprowidx,phase} = dotPosX / pixPerDeg;
