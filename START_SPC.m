@@ -40,7 +40,15 @@ try
     % Go!:
     generalExpControlScript;
     
-    % File reorganisation:
+    % File reorganisation (place .EDF files in subject data folder):
+    dataFilePattern = ['*', num2str(participantInfo.sID), '.edf'];
+    dataOnFile = dir(dataFilePattern);
+    moveFilePath = ['data/s', num2str(participantInfo.sID), '/'];
+    if ~isempty(dataOnFile) % data files found
+        for ii = 1:length(dataOnFile) % EACH file
+            movefile(dataOnFile(ii).name, moveFilePath);
+        end
+    end
     
 catch e % error!!! Execute emergency shutdown...
     
