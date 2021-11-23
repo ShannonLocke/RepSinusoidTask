@@ -165,9 +165,7 @@ while continueTestingYN
     % Ask participant what to do next:
     if phase >= expData.expDesign.nPhase % end of experiment
         
-        makeTxt = ['Experiment complete!\n\n Thank you for your participation :)\n\n'...
-            'Please send all the files in the data folder to the experimenter.\n\n '...
-            '(press space to close the screen)'];
+        makeTxt = 'Experiment complete!\n\n Thank you for your participation :)\n\n (press space to close the screen)';
         quickDrawText(w,makeTxt,'keyPress',spaceKey);
         if ~experimenterYN
             participantInfoCard(expName,pic_fieldNames,pic_prompt,participantInfo); % remove subject ID from participant info card

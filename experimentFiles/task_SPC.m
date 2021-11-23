@@ -108,10 +108,10 @@ for trial = 1:nTrials
         
         % collect response:
         if trial == 1
-            respKey = quickDrawText(w,confTxt,'keyPress',[leftKey, rightKey]);
+            respKey = quickDrawText(w,confTxt,'keyPress',[leftKey, rightKey, qKey]);
         else
             respKey = NaN;
-            while ~(respKey == leftKey || respKey == rightKey)
+            while ~any(respKey == [leftKey, rightKey, qKey])
                 respKey = key_resp(-1);
             end
         end
@@ -128,6 +128,9 @@ for trial = 1:nTrials
                 conf(trial) = -1; % left arrow, save as -1 (worse)
             case rightKey
                 conf(trial) = 1; % right arrow, save as 1 (better)
+            case qKey
+                saveData_SPC % save data collected thus far and exit
+                return
         end
         
     end
@@ -157,24 +160,8 @@ end
 % SAVE AND FINAL INSTRUCTIONS
 % --------------------------- %
 
-% Save testing information:
-expData.hardware.testLocation{resprowidx,phase} = testLocation;
-expData.hardware.randomSeed{resprowidx,phase} = randomSeed;
-
-% Save results:
-expData.res.tval{resprowidx,phase} = 0:(1/hardware.fps):nFrames;
-expData.res.targX{resprowidx,phase} = targ / pixPerDeg;
-expData.res.dotPosX{resprowidx,phase} = dotPosX / pixPerDeg;
-expData.res.dotPosY{resprowidx,phase} = dotPosY / pixPerDeg;
-if confYN
-    expData.res.resp{resprowidx,phase} = conf;
-    expData.res.RT{resprowidx,phase} = RT;
-end
-
-% Close and save eye-tracking data:
-if useEyeLinkYN
-    EyeLink_shutdown;
-end
+% Save all data:
+saveData_SPC
 
 % Finish instructions:
 nTextScreens = length(endTxt);
