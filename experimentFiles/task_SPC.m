@@ -108,7 +108,7 @@ for trial = 1:nTrials
         
         % collect response:
         if trial == 1
-            respKey = quickDrawText(w,confTxt,'keyPress',[leftKey, rightKey, qKey]);
+            respKey = quickDrawText(w,['!!! REMINDER !!!\n\n\n', confTxt],'keyPress',[leftKey, rightKey, qKey]);
         else
             respKey = NaN;
             while ~any(respKey == [leftKey, rightKey, qKey])

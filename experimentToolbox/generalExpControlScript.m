@@ -71,16 +71,6 @@ catch
     setupTracker = 1;
     expData.hardware = hardware; % add hardware information
     
-    % Pre-allocate space for calibration results:
-    if blindspotCalibrationYN % use blindspot calibration
-        expData.calibration.pixPerDeg = NaN([1,expData.expDesign.nPhase]);
-        expData.calibration.distToBlindspot = cell([1,expData.expDesign.nPhase]);
-        expData.calibration.setup = NaN([1,expData.expDesign.nPhase]);
-    else % use preset pixPerDeg value
-        expData.calibration.pixPerDeg = preset_pixPerDeg;
-        pixPerDeg = preset_pixPerDeg;
-    end
-    
     % Save the initial participant file:
     save(saveFile,'expData');
     
@@ -124,21 +114,6 @@ while continueTestingYN
     makeTxt= ['Starting ' phaseTxt '\n\n (press space to continue)'];
     quickDrawText(w,makeTxt,'keyPress',spaceKey);
     
-    % Perform blindspot calibration and record set-up:
-    if blindspotCalibrationYN % use blindspot calibration
-        if strcmp(mode,'demo')
-            nCalibrationRuns = 3;
-        else
-            nCalibrationRuns = expData.expDesign.nCalibrationRuns(phase);
-        end
-        [pixPerDeg, distToBlindspot] = blindspotCalibration(nCalibrationRuns,w,hardware);
-        if ~experimenterYN
-            expData.calibration.pixPerDeg(phase) = pixPerDeg;
-            expData.calibration.distToBlindspot{phase} = distToBlindspot;
-            expData.calibration.setup(phase) = setupTracker;
-        end
-    end
-    
     % Find row index to save results:
     [nRow,nCol] = size(expData.res.resp); % get dimensions of results
     if nCol < phase % no entries for this phase
@@ -172,14 +147,20 @@ while continueTestingYN
         end
         continueTestingYN = false;
         
+    elseif phase == 2 % End of session 1
+        
+        makeTxt = 'Session 1 of 2 complete!\n\n Thank you for your participation :)\n\n (press space to close the screen)';
+        quickDrawText(w,makeTxt,'keyPress',spaceKey);
+        continueTestingYN = false; % exit while loop
+    
     else % not complete, does the participant want continue, repeat, or exit?
         
         % Get participant's decision:
         if any(strcmp(mode,forbidRepeatPhase)) % not allowed to repeat this phase
-            optionsTxt = ' Press space bar to continue or "q" to exit this session.';
+            optionsTxt = ' Press "space bar" to continue or "q" to exit this session.';
             allowedKeys = [spaceKey qKey];
         else % repeats allowed
-            optionsTxt = ' Press space bar to continue, "r" to repeat this phase,\n or "q" to exit this session.';
+            optionsTxt = ' Press "space bar" to continue, "r" to repeat this phase,\n or "q" to exit this session.';
             allowedKeys = [spaceKey rKey qKey];
         end
         makeTxt = ['You have completed ' phaseTxt '\n\n' optionsTxt];
