@@ -33,9 +33,9 @@ switch mode
     case 'demo'
         edfFileName = 'D';
     case 'training'
-        edfFileName = 'R';
+        edfFileName = ['R' num2str((phase+1)/2) '_'];
     case 'test'
-        edfFileName = ['T' num2str(phase-1) '_'];
+        edfFileName = ['T' num2str(phase/2) '_'];
 end
 edfFileName = [edfFileName num2str(participantInfo.sID)];
 disp(['Eye-tracking results will be stored in the following file: ' edfFileName '.edf'])
