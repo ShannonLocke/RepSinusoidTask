@@ -49,6 +49,9 @@ try
         end
     end
     
+    % Clean up workspace:
+    clear;
+    
 catch e % error!!! Execute emergency shutdown...
     
     sca;
