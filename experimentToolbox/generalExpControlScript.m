@@ -182,4 +182,3 @@ end
 % Shutdown:
 sca;
 ListenChar(0);
-clear;
