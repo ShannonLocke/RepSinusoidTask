@@ -81,33 +81,41 @@ for nn = 1:nSs % EACH participant
     
     %% Get eye data:
     
+    % Setup info:
+    sCenter = expData.hardware.sCenter; % screen center coordinates
+    pixPerDeg = 80; % testing room
+    
     % Preallocate:
     eyeData.eyePosX = cell(N,1);
     eyeData.eyePosY = cell(N,1);
     eyeData.pupilSize = cell(N,1);
+    eyePosX_training = {};
+    eyePosY_training = {};
+    pupilSize_training = {};
     
     for ss = 1:nSessions
         
         % Get training-task data:
-        % pidx = (ss-1)*2 + 1; % phase index
-        respYN = false;
         fname = [dataPath, 'R', num2str(ss), '_', num2str(sID), '.edf'];
-        [eyePosX, eyePosY, pupilSize] = readEyeData(fname, nTrainTrials, respYN);
-        
+        [eyePosX, eyePosY, pupilSize] = readEyeData(fname, sCenter, pixPerDeg);
+        eyePosX_training = [eyePosX_training; eyePosX];
+        eyePosY_training = [eyePosY_training; eyePosY];
+        pupilSize_training = [pupilSize_training; pupilSize];
         
         % Get main-task data:
-        % pidx = ss*2; % phase index
-        % targX = expData.res.targX{pidx}; % target position
-        respYN = true;
         fname = [dataPath, 'T', num2str(ss), '_', num2str(sID), '.edf'];
-        [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, nTrainTrials, respYN);
-
+        [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, sCenter, pixPerDeg);
+        idx = (1:nTrials) + (ss-1)*nTrials;
+        eyeData.eyePosX(idx) = eyePosX;
+        eyeData.eyePosY(idx) = eyePosY;
+        eyeData.pupilSize(idx) = pupilSize;
+        
     end
     
     %% Export main-task file for further Matlab processing:
     eyeData.sf = sf;
-    fname = [dataToPath_matFiles, 'rawData_s', num2str(sID), '.mat'];
-    load(fname, 'eyeData')
+    fname = [dataToPath_matFiles, 'eyeData_s', num2str(sID), '.mat'];
+    save(fname, 'eyeData')
     
     %% Export all eye data to csv for OSF:
     
@@ -121,14 +129,13 @@ for nn = 1:nSs % EACH participant
     
     % Save .csv file:
     dataPath = [dataToPath_osfFiles, 's', num2str(sID), '/'];
-    % ==> Raw trial data (goes into 
     % ==> Raw eye data
         
 end
 
 end
 
-function [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, nTrials, respYN)
+function [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, sCenter, pixPerDeg)
 
 % Convert EDF file to MAT:
 Data = Edf2Mat(fname);
@@ -153,6 +160,7 @@ time_stimStop = sort(time_stimStop,'ascend'); % Make sure stimulus presentation 
 idx_eye = Data.Samples.gx(1,:) ~= Data.MISSING_DATA_VALUE;
 
 % Eye-related data:
+N = length(time_begin);
 eyePosX = cell([N,1]);
 eyePosY = cell([N,1]);
 pupilSize = cell([N,1]);
@@ -160,10 +168,11 @@ for trial = 1:N % EACH trial
     idx_trial = Data.Samples.time >= time_begin(trial) &  Data.Samples.time <= time_stimStop(trial);
     getX = Data.Samples.gx(idx_trial,idx_eye);
     getY = Data.Samples.gy(idx_trial,idx_eye);
-    eyePosX{N} = (getX - expData.hardware.sCenter(1)) / pixPerDeg;
-    eyePosY{N} = (getY - expData.hardware.sCenter(1)) / pixPerDeg;
-    pupilSize{N} = Data.Samples.pupilSize(idx_trial);
+    eyePosX{trial} = (getX - sCenter(1)) / pixPerDeg;
+    eyePosY{trial} = (getY - sCenter(2)) / pixPerDeg;
+    pupilSize{trial} = Data.Samples.pupilSize(idx_trial);
 end
-sf = double(Data.RawEdf.RECORDINGS.sample_rate);  % sampling frequency
+sf = Data.RawEdf.RECORDINGS.sample_rate;  % sampling frequency
+sf = double(sf);
 
 end
