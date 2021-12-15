@@ -10,19 +10,19 @@ function [] = run_dataAnalysisPipeline()
 % License: CC-By Attribution 4.0 International
 
 % Find the participant IDs of available data:
-sIDs = [];
+all_sID = [];
 
 % Extract the raw data:
 disp('...EXTRACTING THE RAW DATA...')
-prep_extractRawData(sIDs)
+prep_extractRawData(all_sID)
 
 % Process the raw data:
 disp('...PROCESSING THE RAW DATA...')
-prep_processData(sIDs)
+prep_processData(all_sID)
 
 % Compute data summary:
 disp('...COMPUTING DATA SUMMARY...')
-prep_summaryData(sIDs)
+prep_summaryData(all_sID)
 
 % H1 analysis:
 disp('...TESTING HYPOTHESIS 1 NOW...')
