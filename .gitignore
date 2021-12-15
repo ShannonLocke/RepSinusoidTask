@@ -1,5 +1,8 @@
 .DS_Store
 node_modules/
 /data
+/dataAnalysis/holdForNow
+/dataAnalysis/output_data
+/dataAnalysis/output_figures
 *.m~
 results_SPC_TESTRUN_*.mat
