@@ -10,7 +10,26 @@ function [] = run_dataAnalysisPipeline()
 % License: CC-By Attribution 4.0 International
 
 % Find the participant IDs of available data:
-all_sID = [];
+dataFilePattern = '../data/s*';
+sOnFile = dir(dataFilePattern);
+nSs = length(sOnFile);
+for nn = 1:nSs
+    getFolderName = sOnFile(nn).name;
+    all_sID(nn) = str2num(getFolderName(2:end));
+end
+
+% If option selected, limit to only unprocessed Ss data:
+onlyNewDataYN = true;
+if onlyNewDataYN
+    dataFilePattern = 'output_data/processed/processedEyeData_s*.mat';
+    sOnFile = dir(dataFilePattern);
+    nSs = length(sOnFile);
+    for nn = 1:nSs
+        sel_sID = sOnFile(nn).name;
+        sel_sID = str2num(sel_sID(13:15));
+        all_sID(all_sID == sel_sID) = [];
+    end
+end
 
 % Extract the raw data:
 disp('...EXTRACTING THE RAW DATA...')
