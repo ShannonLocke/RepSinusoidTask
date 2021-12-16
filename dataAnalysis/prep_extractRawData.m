@@ -122,7 +122,7 @@ for nn = 1:nSs % EACH participant
     % Main-task file for further Matlab processing:
     disp('... Exporting mat file ...')
     eyeData.sf = sf;
-    fname = [dataToPath_matFiles, 'eyeData_s', num2str(sID), '.mat'];
+    fname = [dataToPath_matFiles, 'rawEyeData_s', num2str(sID), '.mat'];
     save(fname, 'eyeData')
     
     % Create table of training eye data for OSF csv:
@@ -162,7 +162,7 @@ for nn = 1:nSs % EACH participant
         'eyePosXdeg', 'eyePosYdeg', 'pupilSizePix'};
     
     % Save .csv file:
-    fname = [dataToPath_osfFiles, 'eyeData_s', num2str(sID), '.csv'];
+    fname = [dataToPath_osfFiles, 'rawEyeData_s', num2str(sID), '.csv'];
     writetable(T,fname);
     
 end
