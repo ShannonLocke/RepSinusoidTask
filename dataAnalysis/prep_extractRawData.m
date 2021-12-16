@@ -1,13 +1,13 @@
 function [] = prep_extractRawData(all_sID)
-% This script will run the prepare the raw data for the Repeated-Sinusoids
+% This script will run the prepare the raw eye data for the Repeated-Sinusoids
 % task (Locke, Goettker, Gegenfurtner, & Mamassian, 2021).
 %
 % INPUTS:
 % 1) all_sID - vector of subject IDs to be extracted
 %
 % OUTPUTS (per participant):
-% 1) main-task raw data file for further processing in Matlab
-% 2) training & main-task raw eye data file for OSF (CSV format)
+% 1) main-task raw eye data file for further processing in Matlab (*.mat)
+% 2) training & main-task raw eye data file for OSF (*.csv)
 %
 % Data: https://osf.io/j9asn/
 % Code: https://github.com/ShannonLocke/RepSinusoidTask
@@ -41,10 +41,12 @@ end
 
 for nn = 1:nSs % EACH participant
     
+    sID = all_sID(nn); % participants' ID
+    disp(['Extracting raw data of s', num2str(sID)])
+    
     %% Get stimulus and confidence data:
     
     % Load data:
-    sID = all_sID(nn); % participants' ID
     dataPath = [dataFromPath, 's', num2str(sID), '/'];
     dataFilePattern = ['/results_' expName '_*.mat'];
     dataOnFile = dir([dataPath, dataFilePattern]);
@@ -94,8 +96,10 @@ for nn = 1:nSs % EACH participant
     pupilSize_training = {};
     
     for ss = 1:nSessions
+        disp(['... Session ', num2str(ss), ' ...'])
         
         % Get training-task data:
+        disp('... ... Training data ... ...')
         fname = [dataPath, 'R', num2str(ss), '_', num2str(sID), '.edf'];
         [eyePosX, eyePosY, pupilSize] = readEyeData(fname, sCenter, pixPerDeg);
         eyePosX_training = [eyePosX_training; eyePosX];
@@ -103,6 +107,7 @@ for nn = 1:nSs % EACH participant
         pupilSize_training = [pupilSize_training; pupilSize];
         
         % Get main-task data:
+        disp('... ... Test data ... ...')
         fname = [dataPath, 'T', num2str(ss), '_', num2str(sID), '.edf'];
         [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, sCenter, pixPerDeg);
         idx = (1:nTrials) + (ss-1)*nTrials;
@@ -112,25 +117,54 @@ for nn = 1:nSs % EACH participant
         
     end
     
-    %% Export main-task file for further Matlab processing:
+    %% Export data:
+    
+    % Main-task file for further Matlab processing:
+    disp('... Exporting mat file ...')
     eyeData.sf = sf;
     fname = [dataToPath_matFiles, 'eyeData_s', num2str(sID), '.mat'];
     save(fname, 'eyeData')
     
-    %% Export all eye data to csv for OSF:
-    
-    % Create table:
+    % Create table of training eye data for OSF csv:
+    disp('... Exporting csv file ...')
     for ii = 1:N_training
-        
+        ns = length(eyePosX_training{ii}); % number of samples
+        tmpT = table(repmat(session_training(ii), [ns,1]), ... % session
+            ones([ns,1]), ... % trainingYN
+            repmat(trial_training(ii), [ns,1]), ... % trial
+            repmat(signedTrajectoryID_training(ii), [ns,1]), ... % trajectory
+            (1:ns)', ... % sample number
+            eyePosX_training{ii}, ... % horizontal eye position
+            eyePosY_training{ii}, ... % vertical eye position
+            pupilSize_training{ii}); % pupil size
+        if ii == 1
+            T = tmpT;
+        else
+            T = [T; tmpT];
+        end
     end
+    
+    % Create table of test eye data for OSF csv:
     for ii = 1:N
-        
+        ns = length(eyeData.eyePosX{ii}); % number of samples
+        tmpT = table(repmat(session(ii), [ns,1]), ... % session
+            zeros([ns,1]), ... % trainingYN
+            repmat(trial(ii), [ns,1]), ... % trial
+            repmat(signedTrajectoryID(ii), [ns,1]), ... % trajectory
+            (1:ns)', ... % sample number
+            eyeData.eyePosX{ii}, ... % horizontal eye position
+            eyeData.eyePosY{ii}, ... % vertical eye position
+            eyeData.pupilSize{ii}); % pupil size
+        T = [T; tmpT];
     end
+    T.Properties.VariableNames = {'session', 'trainingYN', 'trial', ...
+        'directionSignedTrajectoryID', 'sampleNumberAt1000HzSF', ...
+        'eyePosXdeg', 'eyePosYdeg', 'pupilSizePix'};
     
     % Save .csv file:
-    dataPath = [dataToPath_osfFiles, 's', num2str(sID), '/'];
-    % ==> Raw eye data
-        
+    fname = [dataToPath_osfFiles, 'eyeData_s', num2str(sID), '.csv'];
+    writetable(T,fname);
+    
 end
 
 end
