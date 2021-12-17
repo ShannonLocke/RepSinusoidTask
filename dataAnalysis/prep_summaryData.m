@@ -26,9 +26,9 @@ nSs = length(all_sID); % number of participants
 % Directories:
 dataFromPath_conf = '../data/';
 dataFromPath_eye = 'output_data/processed/';
-dataToPath_matFiles = 'output_data/summary/';
+dataToPath_matFiles = 'output_data/';
 dataToPath_osfFiles = 'output_data/forOSF/';
-tableVarNamesForOSF = {'session', 'trainingYN', 'trial', ...
+tableVarNamesForOSF = {'subjectID', 'session', 'trainingYN', 'trial', ...
         'directionSignedTrajectoryID', 'confidence', 'RT', 'RMSE', ...
         'RMSEsec1', 'RMSEsec2', 'RMSEsec3', 'RMSEsec4', 'RMSEsec5', ...
         'RMSEsec6'};
@@ -79,10 +79,24 @@ for nn = 1:nSs % EACH participant
     summaryData.conf = cell2mat(expData.res.resp(idxT)');
     summaryData.RT = cell2mat(expData.res.RT(idxT)');
     
+    % RMSE data:
+    for ii = 1:N
+        getError = eyeDataPro.errorEuclid{ii};
+        summaryData.RMSE(ii,nn) = sqrt(mean(getError.^2));
+        ns = length(getError);
+        tbin = ceil(linspace(0,6,ns));
+        tbin(1) = 1; % replace leading 0
+        for bb = 1:6 % EACH time bin
+            idx = tbin == bb;
+            summaryData.binnedRMSE(ii,bb,nn) = sqrt(mean(getError(idx).^2));
+        end
+    end
+    
     % Create table of training  data for OSF csv:
     trajectory_training = cell2mat(expData.expDesign.designMat(idxR)');
     trajectory_training = trajectory_training(:,1) .* trajectory_training(:,2);
-    tmpT = table(repelem((1:nSessions)', nTrainTrials), ... % session
+    tmpT = table(sID*ones([N_training,1]), ... % subjectID
+        repelem((1:nSessions)', nTrainTrials), ... % session
         ones([N_training,1]), ... % trainingYN
         repmat((1:nTrainTrials)', [nSessions,1]), ... % trial
         trajectory_training, ... % trajectory signed by direction
@@ -103,7 +117,8 @@ for nn = 1:nSs % EACH participant
     end
     
     % Create table of test eye data for OSF csv:
-    tmpT = table(summaryData.session(:,nn), ... % session
+    tmpT = table(sID*ones([N,1]), ... % subjectID
+        summaryData.session(:,nn), ... % session
         zeros([N,1]), ... % trainingYN
         summaryData.trial(:,nn), ... % trial
         summaryData.trajectory(:,nn), ... % trajectory signed by direction
@@ -122,77 +137,13 @@ for nn = 1:nSs % EACH participant
 end
 
     %% Export main-task file for further Matlab processing:
-    fname = [dataToPath_matFiles, 'rawData_s', num2str(sID), '.mat'];
-    load(fname, 'rawData')
+    disp('... Exporting mat file ...')
+    fname = [dataToPath_matFiles, 'summaryDataSPC.mat'];
+    save(fname, 'summaryData')
     
     %% Export all eye data to csv for OSF:
     disp('... Exporting csv file ...')
-    T.Properties.VariableNames = {'session', 'trainingYN', 'trial', ...
-        'directionSignedTrajectoryID', 'confidence', 'RT', 'RMSE', ...
-        'RMSEsec1', 'RMSEsec2', 'RMSEsec3', 'RMSEsec4', 'RMSEsec5', ...
-        'RMSEsec6'};
-    dataPath = [dataToPath_osfFiles, 's', num2str(sID), '/'];
-    % ==> Raw trial data (goes into 
-    % ==> Raw eye data
+    fname = [dataToPath_osfFiles, 'summaryData.csv'];
+    writetable(T,fname);
 
 end
-
-% 
-% %% cleanData.m
-% %
-% % Created by SML Nov 2021
-% 
-% % expName = 'replicate'; 
-% expName = 'sinusoid';
-% 
-% % Find participants on file:
-% dataPath = ['data_', expName, '/'];
-% dataFilePattern = 's*';
-% dataOnFile = dir([dataPath, dataFilePattern]);
-% nSs = size(dataOnFile,1);
-% 
-% %% Collate data:
-% 
-% for nn = 1:nSs
-%     
-%     groupData.sID(nn) = str2double(dataOnFile(nn).name(2:end));
-%     
-%     % Load data files:
-%     dataPath = ['data_', expName, '/' dataOnFile(nn).name, '/'];
-%     fName = ['T1_', dataOnFile(nn).name(2:end), '_eyeData.mat'];
-%     load([dataPath, fName],'eyeData')
-%     
-%     % Store data of interest:
-% %     if strcmp(expName, 'sinusoid')
-% %         groupData.trajID{nn} = expData.expDesign.designMat{2}(:,1);
-% %         groupData.trajDir{nn} = expData.expDesign.designMat{2}(:,2);
-% %     end
-%     groupData.errorX{nn} = eyeData.errorX;
-%     groupData.errorEuclid{nn} = eyeData.errorEuclid;
-%     groupData.tSteps_error = eyeData.tSteps_error;
-%     groupData.RMSE_X{nn} = eyeData.RMSE_X;
-%     groupData.RMSE_Euclid{nn} = eyeData.RMSE_Euclid;
-%     groupData.conf{nn} = eyeData.conf;
-%     
-%     % Compute latency shifted RMSE:
-%     nTrials = size(eyeData.xcorr_pos,2);
-%     nSamples = size(eyeData.targX_int,1);
-%     latShiftRMSE = eyeData.RMSE_X;
-%     for tt = 1:nTrials
-%         get_xcorr = eyeData.xcorr_pos(:,tt);
-%         if ~any(isnan(get_xcorr))
-%             latency = eyeData.lag_pos(get_xcorr == max(get_xcorr));
-%             nShift = -round(latency * eyeData.sf);
-%             if nShift > 0
-%                 getErr = eyeData.targX_int(:,tt) - eyeData.eyePosX_deg(nShift:(nSamples+nShift-1),tt);
-%                 latShiftRMSE(tt) = sqrt(nanmean(getErr.^2));
-%             end
-%         end
-%     end
-%     groupData.latShiftRMSE{nn} = latShiftRMSE;
-% end
-% 
-% %% Save data:
-% 
-% fName = ['data_', expName, '/groupData.mat']; 
-% save(fName,'groupData')

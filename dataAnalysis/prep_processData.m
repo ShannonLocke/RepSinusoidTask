@@ -44,6 +44,8 @@ for nn = 1:nSs % EACH participant
     % Load raw data:
     fname = [dataFromPath, 'rawEyeData_s', num2str(sID), '.mat'];
     load(fname, 'eyeData')
+    eX = eyeData.eyePosX;
+    eY = eyeData.eyePosY;
     [nTrials,nSessions] = size(eyeData.eyePosX);
     N = nTrials * nSessions;
     
@@ -81,6 +83,16 @@ for nn = 1:nSs % EACH participant
             figure; hold on
             plot(tDir * trajInfo.targ_1000Hz(:,tID),'-')
             plot(linspace(1,nsT,nsE),targPosX,'o')
+        end
+        
+        % Interpolate across blinks:
+        blinkYN = isnan(eX{tt}) | isnan(eY{tt});
+        if any(blinkYN) % IS blinks, do interpolation
+            nBlinks = sum(diff(blinkYN)==1);
+            bidx = [find(diff(blinkYN)==-1), find(diff(blinkYN)==1)];
+            for bb = 1:nBlinks
+                % <== DO THIS...
+            end
         end
         
         % Compute Euclidean Error signal:
