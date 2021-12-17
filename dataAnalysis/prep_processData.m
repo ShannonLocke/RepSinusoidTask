@@ -26,6 +26,10 @@ nSs = length(all_sID); % number of participants
 dataFromPath = 'output_data/raw/';
 dataToPath = 'output_data/processed/';
 
+% Visualisation settings:
+plotYN = true;
+plotEvery = 100; 
+
 %% Process data:
 
 % Load trajectory info:
@@ -73,21 +77,24 @@ for nn = 1:nSs % EACH participant
         targPosX(1:idx1) = trajInfo.targ_1000Hz(1,tID);  % replace initial NaNs with first value
         targPosX(idx2:end) = trajInfo.targ_1000Hz(end,tID); % replace final NaNs with last value
         targPosX = tDir * targPosX; % account for direction
-        % Visualisation check ...
-        % figure; hold on
-        % plot(tDir * trajInfo.targ_1000Hz(:,tID),'-')
-        % plot(linspace(1,nsT,nsE),targPosX,'o')
+        if plotYN && (mod(tt,plotEvery)==0) % visualisation check
+            figure; hold on
+            plot(tDir * trajInfo.targ_1000Hz(:,tID),'-')
+            plot(linspace(1,nsT,nsE),targPosX,'o')
+        end
         
         % Compute Euclidean Error signal:
         errorX = eyeData.eyePosX{tt} - targPosX;
         errorY = eyeData.eyePosY{tt} - 0;
         eyeDataPro.errorEuclid{tt} = sqrt(errorX.^2 + errorY.^2);
-        % Visualisation check ...
-        % figure; hold on
-        % plot(errorX); plot(errorY)
-        % plot(eyeDataPro.errorEuclid{tt})
+        if plotYN && (mod(tt,plotEvery)==0) % visualisation check
+            figure; hold on
+            plot(errorX); plot(errorY)
+            plot(eyeDataPro.errorEuclid{tt})
+        end
         
         % Compute eye velocity (filtered):
+        % <== DO THIS...
         %     pOrder = 2;
         %     fLength = 51;
         %     dx = denoiseSG(eyeData.eyePosX_deg,eyeData.sf,pOrder,fLength,0);
@@ -98,15 +105,19 @@ for nn = 1:nSs % EACH participant
         eyeDataPro.filtEyeVelocity{tt} = [];
         
         % Compute eye velocity (saccades removed):
+        % <== DO THIS...
         eyeDataPro.noSaccadeEyeVelocity{tt} = [];
         
         % Velocity error signal:
+        % <== DO THIS...
         eyeDataPro.velocityError{tt} = [];
         
         % Classify samples (blink, fixation, saccade, smooth-pursuit):
+        % <== DO THIS...
         eyeDataPro.eyeMovClassified{tt} = [];
         
         % Tracking lag cross-correlation:
+        % <== DO THIS...
         %     % Position:
         %     tdat = eyeData.targX_int;
         %     keep_idx = ~isnan(tdat(:,1));
@@ -130,9 +141,11 @@ for nn = 1:nSs % EACH participant
         eyeDataPro.xcorr{tt} = [];
         
         % Lag-shifted error signal:
+        % <== DO THIS...
         eyeDataPro.lagShiftedError{tt} = [];
         
         % Cleaned pupil signal (z-score?, norm by beginning?):
+        % <== DO THIS...
         eyeDataPro.cleanedPupilSignal{tt} = [];
     end
     
