@@ -88,6 +88,7 @@ for nn = 1:nSs % EACH participant
     pixPerDeg = 80; % testing room
     
     % Preallocate:
+    eyeData.nSamples = NaN([N,1]);
     eyeData.eyePosX = cell(N,1);
     eyeData.eyePosY = cell(N,1);
     eyeData.pupilSize = cell(N,1);
@@ -116,6 +117,7 @@ for nn = 1:nSs % EACH participant
         eyeData.eyePosY(idx) = eyePosY;
         eyeData.pupilSize(idx) = pupilSize;
         eyeData.saccadeYN(idx) = saccadeYN;
+        eyeData.nSamples(idx) = cellfun(@length,eyePosX);
         
     end
     
