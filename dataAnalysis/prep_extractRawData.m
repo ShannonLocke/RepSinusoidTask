@@ -5,7 +5,7 @@ function [] = prep_extractRawData(all_sID)
 % INPUTS:
 % 1) all_sID - vector of subject IDs to be extracted
 %
-% OUTPUTS (per participant):
+% FILES GENERATED (per participant):
 % 1) main-task raw eye data file for further processing in Matlab (*.mat)
 % 2) training & main-task raw eye data file for OSF (*.csv)
 %
@@ -91,6 +91,7 @@ for nn = 1:nSs % EACH participant
     eyeData.eyePosX = cell(N,1);
     eyeData.eyePosY = cell(N,1);
     eyeData.pupilSize = cell(N,1);
+    eyeData.saccadeYN = cell(N,1);
     eyePosX_training = {};
     eyePosY_training = {};
     pupilSize_training = {};
@@ -109,11 +110,12 @@ for nn = 1:nSs % EACH participant
         % Get main-task data:
         disp('... ... Test data ... ...')
         fname = [dataPath, 'T', num2str(ss), '_', num2str(sID), '.edf'];
-        [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, sCenter, pixPerDeg);
+        [eyePosX, eyePosY, pupilSize, saccadeYN, sf] = readEyeData(fname, sCenter, pixPerDeg);
         idx = (1:nTrials) + (ss-1)*nTrials;
         eyeData.eyePosX(idx) = eyePosX;
         eyeData.eyePosY(idx) = eyePosY;
         eyeData.pupilSize(idx) = pupilSize;
+        eyeData.saccadeYN(idx) = saccadeYN;
         
     end
     
@@ -169,7 +171,7 @@ end
 
 end
 
-function [eyePosX, eyePosY, pupilSize, sf] = readEyeData(fname, sCenter, pixPerDeg)
+function [eyePosX, eyePosY, pupilSize, saccadeYN, sf] = readEyeData(fname, sCenter, pixPerDeg)
 
 % Convert EDF file to MAT:
 Data = Edf2Mat(fname);
@@ -208,5 +210,43 @@ for trial = 1:N % EACH trial
 end
 sf = Data.RawEdf.RECORDINGS.sample_rate;  % sampling frequency
 sf = double(sf);
+
+% Save Eyelink-detected saccades:
+% <== DO THIS:
+% time_sSacc = Data.Events.Esacc.start; % start of saccade
+% time_eSacc = Data.Events.Esacc.end; % end of saccade
+% elseif length(time_sBlink) < length(time_eBlink)
+%     warning('Mismatch in blink indices!')
+% end
+% eyeData.nBlinks = NaN([1,nTrials]);
+% eyeData.nSaccades = NaN([1,nTrials]);
+% eyeData.BlinksYN = false([maxN,nTrials]);
+% eyeData.SaccadeYN = false([maxN,nTrials]);
+% for trial = 1:nTrials
+%     time_trial = time_begin(trial):time_end(trial);
+%     trial_blinks = ismember(time_sBlink,time_trial);
+%     trial_saccades = ismember(time_sSacc,time_trial);
+%     eyeData.nBlinks(trial) = sum(trial_blinks);
+%     eyeData.nSaccades(trial) = sum(trial_saccades);
+%     if eyeData.nBlinks(trial) > 1 % blinks detected
+%         aa = find(trial_blinks);
+%         for ii = 1:eyeData.nBlinks(trial)
+%             idxS = time_sBlink(aa(ii)) - time_begin(trial) + 1;
+%             idxE = time_eBlink(aa(ii)) - time_begin(trial) + 1;
+%             eyeData.BlinkYN(idxS:idxE,trial) = true;
+%             eyeData.BlinkDur(ii,trial) = (1/eyeData.sf) * (idxE - idxS);
+%         end
+%     end
+%     if eyeData.nSaccades(trial) > 1 % saccades detected
+%         aa = find(trial_saccades);
+%         for ii = 1:eyeData.nSaccades(trial)
+%             idxS = time_sSacc(aa(ii)) - time_begin(trial) + 1;
+%             idxE = time_eSacc(aa(ii)) - time_begin(trial) + 1;
+%             eyeData.SaccadeYN(idxS:idxE,trial) = true;
+%             eyeData.SaccadeDur(ii,trial) = (1/eyeData.sf) * (idxE - idxS);
+%         end
+%     end
+% end
+saccadeYN = cell([N,1]);
 
 end
