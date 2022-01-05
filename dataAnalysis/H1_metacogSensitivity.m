@@ -31,6 +31,7 @@ dataToPath_fig = 'output_figures/H1_metacogSensitivity/';
 fname = [dataFromPath, 'summaryDataSPC.mat'];
 load(fname, 'summaryData'); 
 nSs = length(summaryData.sID);
+sIDs = strsplit(num2str(summaryData.sID));
 
 % Bootstrap
 iterBS = 1000; % number of bootstrap iterations
@@ -88,7 +89,7 @@ end
 
 % All participant's quantile-quantile plots:
 fig = figure; hold on
-plot([0,1], [0,1], 'k--', 'Linewidth', 1)
+plot([0,1], [0,1], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
 for nn = 1:nSs
     plot(pLow{nn}, pHigh{nn}, 'Linewidth', 1)
 end
@@ -97,6 +98,7 @@ xlabel('Cumulative P(RMSE | "worse")')
 ylabel('Cumulative P(RMSE | "better")')
 xticks(0:0.2:1)
 yticks(0:0.2:1)
+legend(sIDs,'Location','southEast','Box','Off')
 axis square
 set(gca,'FontSize',16);
 set(gca,'linewidth',2);
