@@ -24,7 +24,6 @@ rng default
 % Directories:
 addpath('dataAnalysisToolbox')
 dataFromPath = 'output_data/';
-dataToPath_matFiles = 'output_data/hypothesis/';
 dataToPath_osfFiles = 'output_data/forOSF/';
 dataToPath_fig = 'output_figures/H1_metacogSensitivity/';
 
