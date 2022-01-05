@@ -6,8 +6,9 @@ function [] = H1_metacogSensitivity
 % Mamassian, 2021).
 %
 % FILES GENERATED:
-% 1) main-task raw eye data file for further processing in Matlab (*.mat)
-% 2) training & main-task raw eye data file for OSF (*.csv)
+% 1) Individual quantitle-quantile plots (*.pdf)
+% 2) Individual-level metacognitive sensitivity results for OSF (*.csv)
+% 3) Group-level metacognitive sensitivity results for OSF (*.csv)
 %
 % Data: https://osf.io/j9asn/
 % Code: https://github.com/ShannonLocke/RepSinusoidTask

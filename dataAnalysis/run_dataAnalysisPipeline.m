@@ -9,6 +9,9 @@ function [] = run_dataAnalysisPipeline()
 % Created by SML Dec 2021
 % License: CC-By Attribution 4.0 International
 
+% Ensure correct folder structure:
+% <== DO THIS!!!
+
 % Find the participant IDs of available data:
 dataFilePattern = '../data/s*';
 sOnFile = dir(dataFilePattern);
@@ -30,6 +33,7 @@ if onlyNewDataYN
         all_sID(all_sID == sel_sID) = [];
     end
 end
+% <== ISSUE: WON'T PROCESSING ONLY NEW AFFECT THE DATA SUMMARY?
 
 % Extract the raw data:
 disp('...EXTRACTING THE RAW DATA...')
