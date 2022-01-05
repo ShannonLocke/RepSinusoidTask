@@ -5,7 +5,7 @@ function [] = prep_summaryData(all_sID)
 % INPUTS:
 % 1) all_sID - vector of subject IDs to be extracted
 %
-% OUTPUTS (per participant):
+% OUTPUTS (whole group):
 % 1) main-task summary data file for further processing in Matlab
 % 2) training and main-task summary data file for OSF (CSV format)
 %
