@@ -30,11 +30,11 @@ dataToPath = 'output_data/processed/';
 plotYN = true;
 plotEvery = 100; 
 
-%% Process data:
-
 % Load trajectory info:
 load('output_data/trajectoryInformation.mat','trajInfo')
-nsT = length(trajInfo.t_1000Hz);
+ns = length(trajInfo.t_1000Hz);
+
+%% Process data:
 
 for nn = 1:nSs % EACH participant
     
@@ -58,51 +58,48 @@ for nn = 1:nSs % EACH participant
     eyeDataPro.sf = eyeData.sf;
     
     % Preallocate for processed data:
-    eyeDataPro.errorEuclid = cell([nTrials,nSessions]);
-    eyeDataPro.filtEyeVelocity = cell([nTrials,nSessions]);
-    eyeDataPro.noSaccadeEyeVelocity = cell([nTrials,nSessions]);
-    eyeDataPro.velocityError = cell([nTrials,nSessions]);
-    eyeDataPro.eyeMovClassified = cell([nTrials,nSessions]);
-    eyeDataPro.xcorr = cell([nTrials,nSessions]);
-    eyeDataPro.lagShiftedError = cell([nTrials,nSessions]);
-    eyeDataPro.cleanedPupilSignal = cell([nTrials,nSessions]);
+    eyeDataPro.eyeX = NaN([ns,nTrials]);
+    eyeDataPro.eyeY = NaN([ns,nTrials]);
+    eyeDataPro.errorEuclid = NaN([ns,nTrials]); 
+    eyeDataPro.filtEyeVelocity = NaN([ns,nTrials]);
+    eyeDataPro.noSaccadeEyeVelocity = NaN([ns,nTrials]);
+    eyeDataPro.velocityError = NaN([ns,nTrials]);
+    eyeDataPro.eyeMovClassified = NaN([ns,nTrials]);
+    eyeDataPro.xcorr = NaN([ns,nTrials]);
+    eyeDataPro.lagShiftedError = NaN([ns,nTrials]);
+    eyeDataPro.cleanedPupilSignal = NaN([ns,nTrials]);
     
     for tt = 1:N % EACH trial
         
-        % Strech trajctory signals to match number of samples:
+        % Find target info:
         tID = abs(eyeData.trajectory(tt)); % trajectory number
         tDir = sign(eyeData.trajectory(tt)); % trajectory direction
+        targPosX = tDir * trajInfo.targ_1000Hz(:,tID); % target position
+        
+        % Interpolate eye data signals for identical sample number:
         nsE = eyeData.nSamples(tt); % number of samples, eye data
-        targPosX = interp1(1:nsT, trajInfo.targ_1000Hz(:,tID), 1:nsE)';
-        idx1 = find(diff(isnan(targPosX))==-1); % last beginning NaN
-        idx2 = find(diff(isnan(targPosX))==1)+1; % first ending NaN
-        targPosX(1:idx1) = trajInfo.targ_1000Hz(1,tID);  % replace initial NaNs with first value
-        targPosX(idx2:end) = trajInfo.targ_1000Hz(end,tID); % replace final NaNs with last value
-        targPosX = tDir * targPosX; % account for direction
+        t_eye = linspace(0,6,nsE); % stretched time samples
+        idx = ~isnan(eX{tt}); % find non-blink samples
+        get_eX = interp1(t_eye(idx), eX{tt}(idx), trajInfo.t_1000Hz);
+        get_eY = interp1(t_eye(idx), eY{tt}(idx), trajInfo.t_1000Hz);
+        if isnan(get_eX(1)) || isnan(get_eY(1)); disp(['Trial' num2str(tt)]); warning('Missing beginning values.'); end
+        if isnan(get_eX(end)) || isnan(get_eY(end)); disp(['Trial' num2str(tt)]); warning('Missing end values.'); end
+        eyeDataPro.eyeX(:,tt) = get_eX;
+        eyeDataPro.eyeY(:,tt) = get_eY;
         if plotYN && (mod(tt,plotEvery)==0) % visualisation check
             figure; hold on
-            plot(tDir * trajInfo.targ_1000Hz(:,tID),'-')
-            plot(linspace(1,nsT,nsE),targPosX,'o')
-        end
-        
-        % Interpolate across blinks:
-        blinkYN = isnan(eX{tt}) | isnan(eY{tt});
-        if any(blinkYN) % IS blinks, do interpolation
-            nBlinks = sum(diff(blinkYN)==1);
-            bidx = [find(diff(blinkYN)==-1), find(diff(blinkYN)==1)];
-            for bb = 1:nBlinks
-                % <== DO THIS...
-            end
+            plot(t_eye, eX{tt},'-')
+            plot(trajInfo.t_1000Hz,get_eX,'o')
         end
         
         % Compute Euclidean Error signal:
-        errorX = eyeData.eyePosX{tt} - targPosX;
-        errorY = eyeData.eyePosY{tt} - 0;
-        eyeDataPro.errorEuclid{tt} = sqrt(errorX.^2 + errorY.^2);
+        errorX = get_eX - targPosX;
+        errorY = get_eY - 0;
+        eyeDataPro.errorEuclid(:,tt) = sqrt(errorX.^2 + errorY.^2);
         if plotYN && (mod(tt,plotEvery)==0) % visualisation check
             figure; hold on
             plot(errorX); plot(errorY)
-            plot(eyeDataPro.errorEuclid{tt})
+            plot(eyeDataPro.errorEuclid(:,tt))
         end
         
         % Compute eye velocity (filtered):
@@ -114,19 +111,19 @@ for nn = 1:nSs % EACH participant
         %     eyeData.eyeVelX(end,:) = 0;
         %     eyeData.eyeAccX = dx(1:(end-1),:,3);
         %     eyeData.eyeAccX((end-3):end,:) = 0;
-        eyeDataPro.filtEyeVelocity{tt} = [];
+        % eyeDataPro.filtEyeVelocity(:,tt) = [];
         
         % Compute eye velocity (saccades removed):
         % <== DO THIS...
-        eyeDataPro.noSaccadeEyeVelocity{tt} = [];
+        % eyeDataPro.noSaccadeEyeVelocity(:,tt) = [];
         
         % Velocity error signal:
         % <== DO THIS...
-        eyeDataPro.velocityError{tt} = [];
+        % eyeDataPro.velocityError(:,tt) = [];
         
         % Classify samples (blink, fixation, saccade, smooth-pursuit):
         % <== DO THIS...
-        eyeDataPro.eyeMovClassified{tt} = [];
+        % eyeDataPro.eyeMovClassified(:,tt) = [];
         
         % Tracking lag cross-correlation:
         % <== DO THIS...
@@ -150,15 +147,15 @@ for nn = 1:nSs % EACH participant
         %     [r,lag] = slidingCrossCorrelationCoefficient(tdat,edat,truncateBy);
         %     eyeData.lag_vel = 1/eyeData.sf * (lag);
         %     eyeData.xcorr_vel = r;
-        eyeDataPro.xcorr{tt} = [];
+        % eyeDataPro.xcorr(:,tt) = [];
         
         % Lag-shifted error signal:
         % <== DO THIS...
-        eyeDataPro.lagShiftedError{tt} = [];
+        % eyeDataPro.lagShiftedError(:,tt) = [];
         
         % Cleaned pupil signal (z-score?, norm by beginning?):
         % <== DO THIS...
-        eyeDataPro.cleanedPupilSignal{tt} = [];
+        % eyeDataPro.cleanedPupilSignal(:,tt) = [];
     end
     
     %% Export data for further Matlab processing:
