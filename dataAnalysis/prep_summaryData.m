@@ -91,6 +91,7 @@ for nn = 1:nSs % EACH participant
             summaryData.binnedRMSE(ii,bb,nn) = sqrt(mean(getError(idx).^2));
         end
     end
+    % <== INTERPOLATE ACROSS BLINKS!!!
     
     % Create table of training  data for OSF csv:
     trajectory_training = cell2mat(expData.expDesign.designMat(idxR)');
@@ -138,12 +139,12 @@ end
 
     %% Export main-task file for further Matlab processing:
     disp('... Exporting mat file ...')
-    fname = [dataToPath_matFiles, 'summaryDataSPC.mat'];
+    fname = [dataToPath_matFiles, 'trialSummaryDataSPC.mat'];
     save(fname, 'summaryData')
     
     %% Export all eye data to csv for OSF:
     disp('... Exporting csv file ...')
-    fname = [dataToPath_osfFiles, 'summaryData.csv'];
+    fname = [dataToPath_osfFiles, 'trialSummaryData.csv'];
     writetable(T,fname);
 
 end
