@@ -252,24 +252,10 @@ axis square
 fname = [dataToPath_fig 'H2_all' txt_sID];
 print(fig,fname,'-dpdf','-bestfit')
 
-%% Histogram of AUROC differences:
-fig = figure; hold on
-plot([0,0], [0,3], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
-histogram(sessionEffect,'BinEdges',-0.5:0.05:0.5)
-title(['Session Effect in Sample Population'])
-xlabel('Difference in AUROC (Session 2 - Session 1)')
-ylabel('Frequency')
-xlim([-0.5, 0.5])
-axis square
-set(gca,'FontSize',16);
-set(gca,'linewidth',2);
-fname = [dataToPath_fig 'H4_all'];
-print(fig,fname,'-dpdf','-bestfit')
-
 %% Statistical test:
 
 disp('T-test results:...')
-[h,p,ci,stats] = ttest(avgDiffRMSE)
+[h,p,ci,stats] = ttest(avgDiffConf)
 
 %% Prep summary data for OSF:
 

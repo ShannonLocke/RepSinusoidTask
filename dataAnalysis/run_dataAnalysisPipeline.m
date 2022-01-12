@@ -57,7 +57,7 @@ H2_repeatedTrajectories
 
 % H3 analysis:
 disp('6/7. TESTING HYPOTHESIS 3 NOW...')
-H3_temporalMetacognitiveSensitivity
+H3_temporalMetacogSensitivity
 
 % H4 analysis:
 disp('7/7. TESTING HYPOTHESIS 4 NOW...')

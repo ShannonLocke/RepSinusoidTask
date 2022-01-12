@@ -174,7 +174,7 @@ xlim([0, 6])
 ylim([0, 6])
 set(gca,'FontSize',16);
 set(gca,'linewidth',2);
-fname = [dataToPath_fig 'H3_errorTrace_all' sIDs{nn}];
+fname = [dataToPath_fig 'H3_errorTrace_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
 %% Split-half difference in AUROC:
