@@ -26,7 +26,7 @@ dataToPath_osfFiles = 'output_data/forOSF/';
 dataToPath_fig = 'output_figures/H2_repeatedTrajectories/';
 
 % Load data:
-fname = [dataFromPath, 'summaryDataSPC.mat'];
+fname = [dataFromPath, 'trialSummaryDataSPC.mat'];
 load(fname, 'summaryData'); 
 nSs = length(summaryData.sID);
 sIDs = strsplit(num2str(summaryData.sID));
@@ -43,16 +43,24 @@ RMSE_byConf  = NaN([N,nSs,2]);
 % Compute performance and proportion judged "better" per trajectory:
 for nn = 1:nSs % EACH subject
     for tt = 1:N % EACH trajectory
+        
+        % Get overall statistics:
         idx = tidx(:,nn) == tt;
-        RMSE(tt,nn) = mean(summaryData.RMSE(idx,nn));
-        conf(tt,nn) = mean(summaryData.conf(idx,nn)==1);
-        idx = tidx(:,nn) == tt & summaryData.conf(:,nn) == 1; % "better"
-        RMSE_byConf(tt,nn,1) = mean(summaryData.RMSE(idx,nn));
-        idx = tidx(:,nn) == tt & summaryData.conf(:,nn) == -1; % "worse"
-        RMSE_byConf(tt,nn,2) =nmean(summaryData.RMSE(idx,nn));
+        getErr = summaryData.RMSE(idx,nn);
+        getConf = summaryData.conf(idx,nn)==1;
+        RMSE(tt,nn) = mean(getErr);
+        conf(tt,nn) = mean(getConf);
+        
+        % Get statistics of median-split on performance:
+        [~,midx] = sort(getErr); 
+        midpt = length(midx)/2;
+        idx = midx(1:midpt); % better 1/2 of trials
+        conf_medSplit(tt,nn,1) = mean(getConf(idx)); 
+        idx = midx((midpt+1):end); % worse 1/2 of trials
+        conf_medSplit(tt,nn,2) = mean(getConf(idx)); 
+        
     end
 end
-% <= REMOVE NANMEAN ONCE BLINK CORRECTION ADDED
 
 % Determine trajectory difficulty ranking:
 zRMSE = (RMSE - repmat(mean(RMSE),[N,1]))./repmat(std(RMSE),[N,1]);
@@ -60,9 +68,9 @@ zRMSE_group = mean(zRMSE,2);
 [~,diffRank] = sort(zRMSE_group);
 
 % Compute confidence difference:
-diffRMSE = squeeze(RMSE_byConf(:,:,2)-RMSE_byConf(:,:,1));
-avgDiffRMSE = mean(diffRMSE);
-semDiffRMSE = std(diffRMSE)/sqrt(N);
+diffConf = squeeze(conf_medSplit(:,:,1)-conf_medSplit(:,:,2));
+avgDiffConf = mean(diffConf);
+semDiffConf = std(diffConf)/sqrt(N);
 
 %% Plot results:
 
@@ -79,9 +87,9 @@ for nn = 1:nSs % EACH subject
     title('Performance')
     xlabel('Ranked trajectory')
     ylabel('RMSE (deg)')
-    xticks(1:1:10)
+    xticks(1:1:N)
     yticks(0:0.5:3)
-    xlim([0,11])
+    xlim([0,(N+1)])
     ylim([0,3])
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
@@ -113,41 +121,41 @@ for nn = 1:nSs % EACH subject
     set(gca,'linewidth',2);
     axis square
     
-    % RMSE difference between "better" and "worse", split by confidence:
-    selSplitRMSE = squeeze(RMSE_byConf(diffRank,nn,:));
+    % Proportion "better", split by performance:
+    selSplitRMSE = squeeze(conf_medSplit(diffRank,nn,:));
     subplot(3,2,2); hold on
     bar(selSplitRMSE)
-    title('Performance by Confidence')
+    title('Confidence by Performance')
     xlabel('Ranked trajectory')
-    ylabel('RMSE (deg)')
-    xticks(1:1:10)
-    yticks(0:0.5:3.5)
-    xlim([0,11])
-    ylim([0,3.5])
-    legend({'"better"','"worse"'},'Location','NorthWest','Box','Off')
+    ylabel('Prop. "better"')
+    xticks(1:1:N)
+    yticks(0:0.2:1)
+    xlim([0,(N+1)])
+    ylim([0,1])
+    legend({'better 1/2','worse 1/2'},'Location','NorthOutside','Box','Off','NumColumns',2)
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
     
-    % RMSE difference between "better" and "worse":
+    % Conf difference between better and worse halves:
     subplot(3,2,4); hold on
-    bar(diffRMSE(diffRank,nn))
-    title('Performance Difference')
+    bar(diffConf(diffRank,nn))
+    title('Confidence Difference')
     xlabel('Ranked trajectory')
-    ylabel('\Delta RMSE (deg)')
-    xticks(1:1:10)
+    ylabel('\Delta Prop. "better"')
+    xticks(1:1:N)
     yticks(-0.4:0.2:0.4)
-    xlim([0,11])
+    xlim([0,(N+1)])
     ylim([-0.5,0.5])
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
     
     % Average RMSE difference between "better" and "worse":
     subplot(3,2,6); hold on
-    bar(avgDiffRMSE(nn))
-    er = errorbar(1, avgDiffRMSE(nn), semDiffRMSE(nn));
+    bar(avgDiffConf(nn))
+    er = errorbar(1, avgDiffConf(nn), semDiffConf(nn));
     er.Color = [0 0 0];
     er.LineStyle = 'none';
-    title('Avgerage Performance Diff.')
+    title('Avgerage Confidence Diff.')
     xlabel('Ranked trajectory')
     ylabel('\Delta RMSE (deg)')
     xticks(NaN)
@@ -164,7 +172,7 @@ for nn = 1:nSs % EACH subject
     
 end
 
-%%
+%% Group results figure:
 
 fig = figure;
 sgtitle('All Participants','FontSize',18)
@@ -180,9 +188,9 @@ er.LineStyle = 'none';
 title('Performance')
 xlabel('Ranked trajectory')
 ylabel('RMSE (deg)')
-xticks(1:1:10)
+xticks(1:1:N)
 yticks(0:0.5:3)
-xlim([0,11])
+xlim([0,(N+1)])
 ylim([0,3])
 set(gca,'FontSize',14);
 set(gca,'linewidth',2);
@@ -205,31 +213,31 @@ set(gca,'linewidth',2);
 
 % RMSE difference between "better" and "worse":
 subplot(2,2,2); hold on
-barVals = mean(diffRMSE(diffRank,:),2);
-semVals = std(diffRMSE(diffRank,:),0,2)/sqrt(nSs);
+barVals = mean(diffConf(diffRank,:),2);
+semVals = std(diffConf(diffRank,:),0,2)/sqrt(nSs);
 bar(barVals)
 er = errorbar(1:N, barVals, semVals);
 er.Color = [0 0 0];
 er.LineStyle = 'none';
-title('Performance Difference')
+title('Confidence Difference')
 xlabel('Ranked trajectory')
 ylabel('\Delta RMSE (deg)')
-xticks(1:1:10)
+xticks(1:1:N)
 yticks(-0.4:0.2:0.4)
-xlim([0,11])
+xlim([0,(N+1)])
 ylim([-0.5,0.5])
 set(gca,'FontSize',14);
 set(gca,'linewidth',2);
 
 % Average RMSE difference between "better" and "worse":
 subplot(2,2,4); hold on
-barVals = mean(avgDiffRMSE);
-semVals = std(avgDiffRMSE)/sqrt(nSs);
+barVals = mean(avgDiffConf);
+semVals = std(avgDiffConf)/sqrt(nSs);
 bar(barVals)
 er = errorbar(1, barVals, semVals);
 er.Color = [0 0 0];
 er.LineStyle = 'none';
-title('Avgerage Performance Diff.')
+title('Avgerage Confidence Diff.')
 xlabel('Ranked trajectory')
 ylabel('\Delta RMSE (deg)')
 xticks(NaN)
