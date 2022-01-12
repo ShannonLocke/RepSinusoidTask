@@ -1,4 +1,4 @@
-function [] = H4_repeatedSessions
+function [] = H4_repeatedSessions(resDir)
 % This script will perform the analysis for H4: metacognitive sensitivity 
 % does not significantly differ between Session 1 and Session 2 (see Locke, 
 % Goettker, Gegenfurtner, & Mamassian, 2021).
@@ -21,9 +21,9 @@ rng default
 
 % Directories:
 addpath('dataAnalysisToolbox')
-dataFromPath = 'output_data/';
-dataToPath_osfFiles = 'output_data/forOSF/';
-dataToPath_fig = 'output_figures/H4_sessionEffect/';
+dataFromPath = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
+dataToPath_fig = [resDir 'H4_sessionEffect/'];
 
 % Load data:
 fname = [dataFromPath, 'trialSummaryDataSPC.mat'];

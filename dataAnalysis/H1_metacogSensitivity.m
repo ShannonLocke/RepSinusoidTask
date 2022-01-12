@@ -1,4 +1,4 @@
-function [] = H1_metacogSensitivity
+function [] = H1_metacogSensitivity(resDir)
 % This script will perform the analysis for H1: Participants have above 
 % chance metacognitive sensitivity for sorting objectively better eye-
 % tracking performance from objectively worse performance across the entire 
@@ -23,9 +23,9 @@ rng default
 
 % Directories:
 addpath('dataAnalysisToolbox')
-dataFromPath = 'output_data/';
-dataToPath_osfFiles = 'output_data/forOSF/';
-dataToPath_fig = 'output_figures/H1_metacogSensitivity/';
+dataFromPath = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
+dataToPath_fig = [resDir 'H1_metacogSensitivity/'];
 
 % Load data:
 fname = [dataFromPath, 'trialSummaryDataSPC.mat'];

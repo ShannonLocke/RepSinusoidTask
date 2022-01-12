@@ -9,11 +9,22 @@ function [] = run_dataAnalysisPipeline()
 % Created by SML Dec 2021
 % License: CC-By Attribution 4.0 International
 
+%% PREAMBLE:
+
+% Switchboard:
+testDataYN = false; % analyse test data or pilot data
+
 % Ensure correct folder structure:
 % <== DO THIS!!!
 
 % Find the participant IDs of available data:
-dataFilePattern = '../data/s*';
+if testDataYN
+    dataFilePattern = '../data/s*';
+    resDir = 'results/';
+else
+    dataFilePattern = '../data_pilot/s*';
+    resDir = 'results_pilot/';
+end
 sOnFile = dir(dataFilePattern);
 nSs = length(sOnFile);
 for nn = 1:nSs
@@ -35,32 +46,32 @@ if onlyNewDataYN
 end
 % <== ISSUE: WON'T PROCESSING ONLY NEW AFFECT THE DATA SUMMARY?
 
-% Extract the raw data:
+%% Extract the raw data:
 disp('1/7. EXTRACTING THE RAW DATA...')
-prep_extractRawData(all_sID)
+prep_extractRawData(all_sID, testDataYN, resDir)
 
-% Process the raw data:
+%% Process the raw data:
 disp('2/7. PROCESSING THE RAW DATA...')
-prep_processData(all_sID)
+prep_processData(all_sID, resDir)
 
-% Compute data summary:
+%% Compute data summary:
 disp('3/7. COMPUTING DATA SUMMARY...')
-prep_summaryData(all_sID)
+prep_summaryData(all_sID, testDataYN, resDir)
 
-% H1 analysis:
+%% H1 analysis:
 disp('4/7. TESTING HYPOTHESIS 1 NOW...')
-H1_metacogSensitivity
+H1_metacogSensitivity(resDir)
 
-% H2 analysis:
+%% H2 analysis:
 disp('5/7. TESTING HYPOTHESIS 2 NOW...')
-H2_repeatedTrajectories
+H2_repeatedTrajectories(resDir)
 
-% H3 analysis:
+%% H3 analysis:
 disp('6/7. TESTING HYPOTHESIS 3 NOW...')
-H3_temporalMetacogSensitivity
+H3_temporalMetacogSensitivity(resDir)
 
-% H4 analysis:
+%% H4 analysis:
 disp('7/7. TESTING HYPOTHESIS 4 NOW...')
-H4_repeatedSessions
+H4_repeatedSessions(resDir)
 
 end

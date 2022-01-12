@@ -1,4 +1,4 @@
-function [] = prep_extractRawData(all_sID)
+function [] = prep_extractRawData(all_sID, testDataYN, resDir)
 % This script will run the prepare the raw eye data for the Repeated-Sinusoids
 % task (Locke, Goettker, Gegenfurtner, & Mamassian, 2021).
 %
@@ -25,9 +25,13 @@ nSs = length(all_sID); % number of participants
 
 % Directories:
 expName = 'SPC';
-dataFromPath = '../data/';
-dataToPath_matFiles = 'output_data/raw/';
-dataToPath_osfFiles = 'output_data/forOSF/';
+if testDataYN
+    dataFromPath = '../data/';
+else
+    dataFromPath = '../data_pilot/';   
+end
+dataToPath_matFiles = [resDir 'raw/'];
+dataToPath_osfFiles = [resDir 'forOSF/'];
 
 % Add paths to necessary files:
 try

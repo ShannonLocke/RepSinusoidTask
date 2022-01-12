@@ -1,4 +1,4 @@
-function [] = H2_repeatedTrajectories
+function [] = H2_repeatedTrajectories(resDir)
 % This script will perform the analysis for H4: metacognitive sensitivity 
 % does not significantly differ between Session 1 and Session 2 (see Locke, 
 % Goettker, Gegenfurtner, & Mamassian, 2021).
@@ -21,9 +21,9 @@ rng default
 
 % Directories:
 addpath('dataAnalysisToolbox')
-dataFromPath = 'output_data/';
-dataToPath_osfFiles = 'output_data/forOSF/';
-dataToPath_fig = 'output_figures/H2_repeatedTrajectories/';
+dataFromPath = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
+dataToPath_fig = [resDir 'H2_repeatedTrajectories/'];
 
 % Load data:
 fname = [dataFromPath, 'trialSummaryDataSPC.mat'];

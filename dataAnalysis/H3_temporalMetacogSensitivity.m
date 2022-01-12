@@ -1,4 +1,4 @@
-function [] = H3_temporalMetacogSensitivity
+function [] = H3_temporalMetacogSensitivity(resDir)
 % This script will perform the analysis for H3: The group-averaged temporal 
 % metacognitive sensitivity curve shows a recency effect (i.e., greater 
 % metacognitive sensitivity for later time bins). For more details see 
@@ -22,10 +22,9 @@ rng default
 
 % Directories:
 addpath('dataAnalysisToolbox')
-dataFromPath = 'output_data/';
-dataToPath_matFiles = 'output_data/hypothesis/';
-dataToPath_osfFiles = 'output_data/forOSF/';
-dataToPath_fig = 'output_figures/H3_temporalAUROCs/';
+dataFromPath = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
+dataToPath_fig = [resDir 'H3_temporalAUROCs/'];
 
 % Load summary data:
 fname = [dataFromPath, 'trialSummaryDataSPC.mat'];
