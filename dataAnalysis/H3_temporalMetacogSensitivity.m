@@ -27,7 +27,7 @@ dataToPath_matFiles = 'output_data/hypothesis/';
 dataToPath_osfFiles = 'output_data/forOSF/';
 dataToPath_fig = 'output_figures/H3_temporalAUROCs/';
 
-% Load data:
+% Load summary data:
 fname = [dataFromPath, 'summaryDataSPC.mat'];
 load(fname, 'summaryData'); 
 nSs = length(summaryData.sID);
@@ -75,7 +75,6 @@ for nn = 1:nSs % EACH subject
     set(gca,'linewidth',2);
     
     % Temporal plots:
-    txt_sID =  num2str(summaryData.sID(nn));
     subplot(2,1,2); hold on
     plot([0,6], [0.5,0.5], 'k--', 'Linewidth', 1)
     plot(0.5:5.5,AUROC(nn,:),'k-','Linewidth', 2)
@@ -92,7 +91,7 @@ for nn = 1:nSs % EACH subject
     set(gca,'linewidth',2);
     
     % Save figure
-    fname = [dataToPath_fig 'H3_s' txt_sID];
+    fname = [dataToPath_fig 'H3_s' sIDs{nn}];
     print(fig,fname,'-dpdf','-bestfit')
     
 end
@@ -130,9 +129,76 @@ set(gca,'linewidth',2);
 fname = [dataToPath_fig 'H3_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
+%% Investigate error mean and variance:
+
+% Preallocate:
+errTrace_mean = NaN([6000,nSs]);
+errTrace_sd = NaN([6000,nSs]);
+
+% Compute mean error curve:
+for ss = 1:nSs % EACH subject
+    
+    % Get data:
+    fname = [dataFromPath 'processed/processedEyeData_s' num2str(summaryData.sID(ss)) '.mat'];
+    load(fname,'eyeDataPro')
+    getError = eyeDataPro.errorEuclid;
+    errTrace_mean(:,ss) = mean(getError,2);
+    errTrace_sd(:,ss) = std(getError,0,2);
+    t = eyeDataPro.t;
+    
+    % Plot mean error curve of individuals:
+    fig = figure; hold on
+    plot(t, errTrace_mean(:,ss), 'k-', 'LineWidth', 2)
+    plot(t, errTrace_mean(:,ss) - errTrace_sd(:,ss), 'r--', 'LineWidth', 2)
+    plot(t, errTrace_mean(:,ss) + errTrace_sd(:,ss), 'r--', 'LineWidth', 2)
+    title(['Participant #' sIDs{nn}])
+    xlabel('Time in Trial (sec)')
+    ylabel('Euclidean Error (deg)')
+    xlim([0, 6])
+    ylim([0, 6])
+    set(gca,'FontSize',16);
+    set(gca,'linewidth',2);
+    fname = [dataToPath_fig 'H3_errorTrace_s' sIDs{nn}];
+    print(fig,fname,'-dpdf','-bestfit')
+    
+end
+
+% Plot mean error curve of group:
+fig = figure; hold on
+plot(t, errTrace_mean, 'k-', 'LineWidth', 1)
+plot(t, mean(errTrace_mean,2), 'r-', 'LineWidth', 2)
+title(['Participant #' sIDs{nn}])
+xlabel('Time in Trial (sec)')
+ylabel('Euclidean Error (deg)')
+xlim([0, 6])
+ylim([0, 6])
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+fname = [dataToPath_fig 'H3_errorTrace_all' sIDs{nn}];
+print(fig,fname,'-dpdf','-bestfit')
+
+%% Split-half difference in AUROC:
+
+splitHalfDiff = mean(AUROC(:,4:6),2) - mean(AUROC(:,1:3),2);
+
+% Histogram of split-half AUROC differences:
+fig = figure; hold on
+plot([0,0], [0,3], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+histogram(splitHalfDiff,'BinEdges',-0.5:0.05:0.5)
+title(['Split-Half Difference in Metacognitive Sensitivity'])
+xlabel('Difference in AUROC (Last 2 sec - Middle 2 sec)')
+ylabel('Frequency')
+xlim([-0.5, 0.5])
+axis square
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+fname = [dataToPath_fig 'H3_all_histogram'];
+print(fig,fname,'-dpdf','-bestfit')
+
 %% Statistical test:
 
-% <= FILL THIS IN!!!
+disp('T-test results:...')
+[h,p,ci,stats] = ttest(splitHalfDiff)
 
 %% Prep summary data for OSF:
 
@@ -145,6 +211,10 @@ fname = [dataToPath_osfFiles 'H3_temporalAUROCs_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-% <= FILL THIS IN!!!
+% Group results:
+T = table(mean(splitHalfDiff), std(splitHalfDiff)/sqrt(nSs), stats.tstat, stats.df, p, h);
+T.Properties.VariableNames = {'meanSHDiff', 'semSHDiff', 'tStat', 'df', 'pVal', 'SigAboveChance'};
+fname = [dataToPath_osfFiles 'H3_temporalAUROCs_groupResults.csv'];
+writetable(T,fname);
 
 end
