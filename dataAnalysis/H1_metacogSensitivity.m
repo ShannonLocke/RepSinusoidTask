@@ -68,14 +68,35 @@ display(['The AUROC mean & SEM is ' meanAUROC '+/-' semAUROC])
 
 %% Plot results:
 
-% Individual quantile-quantile plots:
 for nn = 1:nSs % EACH subject
-    txt_sID =  num2str(summaryData.sID(nn));
-    fig = figure; hold on
+    
+    fig = figure;
+    sgtitle(['Participant #' sIDs{nn} ' (AUROC: ' num2str(AUROC(nn),2) ...
+        ',  95% CI: ' num2str(CIs(nn,1),2) '-' num2str(CIs(nn,2),2) ')'], ...
+        'FontSize', 18)
+    
+    % Histograms of confidence split error:
+    subplot(1,2,1); hold on
+    Err = summaryData.RMSE(:,nn);
+    mE = mean(Err);
+    plot(mE * [1,1], [0,30], 'k--', 'Linewidth', 1, 'HandleVisibility','off') % mean error
+    cidx = (summaryData.conf(:,nn) == 1); % high confidence trials
+    histogram(Err(cidx), 'BinEdges', 0:0.1:4)
+    cidx = (summaryData.conf(:,nn) == -1); % low confidence trials
+    histogram(Err(cidx), 'BinEdges', 0:0.1:4)
+    title(['Error Distributions'])
+    xlabel('Euclidean Error (deg)')
+    ylabel('Frequency')
+    xlim([0, 4])
+    axis square
+    set(gca,'FontSize',16);
+    set(gca,'linewidth',2);
+    
+    % Individual quantile-quantile plots:
+    subplot(1,2,2); hold on
     plot([0,1], [0,1], 'k--', 'Linewidth', 1)
     plot(pLow{nn}, pHigh{nn}, 'r', 'Linewidth', 2)
-    title(['Participant #' txt_sID ' (AUROC: ' num2str(AUROC(nn),2) ...
-        ',  95% CI: ' num2str(CIs(nn,1),2) '-' num2str(CIs(nn,2),2) ')'])
+    title('Metacogntive Sensitivity')
     xlabel('Cumulative P(RMSE | "worse")')
     ylabel('Cumulative P(RMSE | "better")')
     xticks(0:0.2:1)
@@ -83,7 +104,7 @@ for nn = 1:nSs % EACH subject
     axis square
     set(gca,'FontSize',16);
     set(gca,'linewidth',2);
-    fname = [dataToPath_fig 'H1_s' txt_sID];
+    fname = [dataToPath_fig 'H1_s' sIDs{nn}];
     print(fig,fname,'-dpdf','-bestfit')
 end
 
