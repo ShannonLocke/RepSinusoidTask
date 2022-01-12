@@ -58,6 +58,7 @@ for nn = 1:nSs % EACH participant
     eyeDataPro.sf = eyeData.sf;
     
     % Preallocate for processed data:
+    eyeDataPro.t = trajInfo.t_1000Hz;
     eyeDataPro.eyeX = NaN([ns,nTrials]);
     eyeDataPro.eyeY = NaN([ns,nTrials]);
     eyeDataPro.errorEuclid = NaN([ns,nTrials]); 

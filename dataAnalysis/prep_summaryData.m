@@ -81,7 +81,7 @@ for nn = 1:nSs % EACH participant
     
     % RMSE data:
     for ii = 1:N
-        getError = eyeDataPro.errorEuclid{ii};
+        getError = eyeDataPro.errorEuclid(:,ii);
         summaryData.RMSE(ii,nn) = sqrt(mean(getError.^2));
         ns = length(getError);
         tbin = ceil(linspace(0,6,ns));
@@ -91,7 +91,6 @@ for nn = 1:nSs % EACH participant
             summaryData.binnedRMSE(ii,bb,nn) = sqrt(mean(getError(idx).^2));
         end
     end
-    % <== INTERPOLATE ACROSS BLINKS!!!
     
     % Create table of training  data for OSF csv:
     trajectory_training = cell2mat(expData.expDesign.designMat(idxR)');

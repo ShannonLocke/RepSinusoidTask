@@ -44,12 +44,12 @@ RMSE_byConf  = NaN([N,nSs,2]);
 for nn = 1:nSs % EACH subject
     for tt = 1:N % EACH trajectory
         idx = tidx(:,nn) == tt;
-        RMSE(tt,nn) = nanmean(summaryData.RMSE(idx,nn));
-        conf(tt,nn) = nanmean(summaryData.conf(idx,nn)==1);
+        RMSE(tt,nn) = mean(summaryData.RMSE(idx,nn));
+        conf(tt,nn) = mean(summaryData.conf(idx,nn)==1);
         idx = tidx(:,nn) == tt & summaryData.conf(:,nn) == 1; % "better"
-        RMSE_byConf(tt,nn,1) = nanmean(summaryData.RMSE(idx,nn));
+        RMSE_byConf(tt,nn,1) = mean(summaryData.RMSE(idx,nn));
         idx = tidx(:,nn) == tt & summaryData.conf(:,nn) == -1; % "worse"
-        RMSE_byConf(tt,nn,2) = nanmean(summaryData.RMSE(idx,nn));
+        RMSE_byConf(tt,nn,2) =nmean(summaryData.RMSE(idx,nn));
     end
 end
 % <= REMOVE NANMEAN ONCE BLINK CORRECTION ADDED
