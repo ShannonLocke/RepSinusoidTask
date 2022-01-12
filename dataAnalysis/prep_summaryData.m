@@ -1,4 +1,4 @@
-function [] = prep_summaryData(all_sID)
+function [] = prep_summaryData(all_sID, testDataYN, resDir)
 % This script will run the prepare the summary data for the Repeated-
 % Sinusoids task (Locke, Goettker, Gegenfurtner, & Mamassian, 2021).
 %
@@ -24,13 +24,17 @@ end
 nSs = length(all_sID); % number of participants
 
 % Directories:
-dataFromPath_conf = '../data/';
-dataFromPath_eye = 'output_data/processed/';
-dataToPath_matFiles = 'output_data/';
-dataToPath_osfFiles = 'output_data/forOSF/';
+if testDataYN
+    dataFromPath_conf = '../data/';
+else
+    dataFromPath_conf = '../data_pilot/';
+end
+dataFromPath_eye = [resDir 'processed/'];
+dataToPath_matFiles = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
 tableVarNamesForOSF = {'subjectID', 'session', 'trainingYN', 'trial', ...
-        'directionSignedTrajectoryID', 'confidence', 'RT', 'RMSE', ...
-        'RMSEsec1', 'RMSEsec2', 'RMSEsec3', 'RMSEsec4', 'RMSEsec5', ...
+    'directionSignedTrajectoryID', 'confidence', 'RT', 'RMSE', ...
+    'RMSEsec1', 'RMSEsec2', 'RMSEsec3', 'RMSEsec4', 'RMSEsec5', ...
         'RMSEsec6'};
 
 %% Collate summary data:
@@ -65,9 +69,20 @@ for nn = 1:nSs % EACH participant
         summaryData.RMSE = NaN([N,nSs]);
         summaryData.binnedRMSE = NaN([N,6,nSs]);
     end
-    summaryData.session(:,nn) = eyeDataPro.session;
-    summaryData.trial(:,nn) = eyeDataPro.trial;
-    summaryData.trajectory(:,nn) = eyeDataPro.trajectory;
+    tmpN = length(eyeDataPro.session);
+    if tmpN > size(summaryData.session,1) % more trials than budgeted for...
+        diffN = tmpN - size(summaryData.session,1); % how many to add
+        summaryData.session((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.trial((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.trajectory((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.conf((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.RT((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.RMSE((end+1):(end+diffN),:) = NaN([diffN,nSs]);
+        summaryData.binnedRMSE((end+1):(end+diffN),:,:) = NaN([diffN,6,nSs]);
+    end
+    summaryData.session(1:N,nn) = eyeDataPro.session;
+    summaryData.trial(1:N,nn) = eyeDataPro.trial;
+    summaryData.trajectory(1:N,nn) = eyeDataPro.trajectory;
     
     % Extract key info for indexing:
     nTrainTrials = length(expData.expDesign.designMat{1}); % number of training trials
@@ -76,8 +91,8 @@ for nn = 1:nSs % EACH participant
     idxT = find(~cellfun(@isempty,expData.res.resp)); % non-empty test sessions
 
     % Confidence data:
-    summaryData.conf = cell2mat(expData.res.resp(idxT)');
-    summaryData.RT = cell2mat(expData.res.RT(idxT)');
+    summaryData.conf(1:N,nn) = cell2mat(expData.res.resp(idxT)');
+    summaryData.RT(1:N,nn) = cell2mat(expData.res.RT(idxT)');
     
     % RMSE data:
     for ii = 1:N
