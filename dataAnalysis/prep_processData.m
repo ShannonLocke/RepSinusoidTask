@@ -1,4 +1,4 @@
-function [] = prep_processData(all_sID)
+function [] = prep_processData(all_sID, resDir)
 % This script will run the prepare the processed eye data for the Repeated-
 % Sinusoids task (Locke, Goettker, Gegenfurtner, & Mamassian, 2021).
 %
@@ -23,15 +23,15 @@ end
 nSs = length(all_sID); % number of participants
 
 % Directories:
-dataFromPath = 'output_data/raw/';
-dataToPath = 'output_data/processed/';
+dataFromPath = [resDir 'raw/'];
+dataToPath = [resDir 'processed/'];
 
 % Visualisation settings:
-plotYN = true;
+plotYN = false;
 plotEvery = 100; 
 
 % Load trajectory info:
-load('output_data/trajectoryInformation.mat','trajInfo')
+load([resDir 'trajectoryInformation.mat'],'trajInfo')
 ns = length(trajInfo.t_1000Hz);
 
 %% Process data:
@@ -83,8 +83,18 @@ for nn = 1:nSs % EACH participant
         idx = ~isnan(eX{tt}); % find non-blink samples
         get_eX = interp1(t_eye(idx), eX{tt}(idx), trajInfo.t_1000Hz);
         get_eY = interp1(t_eye(idx), eY{tt}(idx), trajInfo.t_1000Hz);
-        if isnan(get_eX(1)) || isnan(get_eY(1)); disp(['Trial' num2str(tt)]); warning('Missing beginning values.'); end
-        if isnan(get_eX(end)) || isnan(get_eY(end)); disp(['Trial' num2str(tt)]); warning('Missing end values.'); end
+        if isnan(get_eX(1)) || isnan(get_eY(1)) % Correct missing beginning values 
+            warning(['Missing beginning values in trial ' num2str(tt) '.']);
+            idx = find(~isnan(get_eX)); idx = idx(1); % first non-nan
+            get_eX(1:idx) = get_eX(idx);
+            get_eY(1:idx) = get_eY(idx);
+        end
+        if isnan(get_eX(end)) || isnan(get_eY(end))
+            warning(['Missing end values in trial ' num2str(tt) '.']);
+            idx = find(~isnan(get_eX)); idx = idx(end); % last non-nan
+            get_eX(idx:end) = get_eX(idx);
+            get_eY(idx:end) = get_eY(idx);
+        end
         eyeDataPro.eyeX(:,tt) = get_eX;
         eyeDataPro.eyeY(:,tt) = get_eY;
         if plotYN && (mod(tt,plotEvery)==0) % visualisation check
