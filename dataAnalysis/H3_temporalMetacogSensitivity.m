@@ -28,7 +28,7 @@ dataToPath_osfFiles = 'output_data/forOSF/';
 dataToPath_fig = 'output_figures/H3_temporalAUROCs/';
 
 % Load summary data:
-fname = [dataFromPath, 'summaryDataSPC.mat'];
+fname = [dataFromPath, 'trialSummaryDataSPC.mat'];
 load(fname, 'summaryData'); 
 nSs = length(summaryData.sID);
 sIDs = strsplit(num2str(summaryData.sID));
