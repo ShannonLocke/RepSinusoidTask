@@ -22,7 +22,7 @@ for nn = 1:nSs
 end
 
 % If option selected, limit to only unprocessed Ss data:
-onlyNewDataYN = true;
+onlyNewDataYN = false;
 if onlyNewDataYN
     dataFilePattern = 'output_data/processed/processedEyeData_s*.mat';
     sOnFile = dir(dataFilePattern);
@@ -36,31 +36,31 @@ end
 % <== ISSUE: WON'T PROCESSING ONLY NEW AFFECT THE DATA SUMMARY?
 
 % Extract the raw data:
-disp('...EXTRACTING THE RAW DATA...')
+disp('1/7. EXTRACTING THE RAW DATA...')
 prep_extractRawData(all_sID)
 
 % Process the raw data:
-disp('...PROCESSING THE RAW DATA...')
+disp('2/7. PROCESSING THE RAW DATA...')
 prep_processData(all_sID)
 
 % Compute data summary:
-disp('...COMPUTING DATA SUMMARY...')
+disp('3/7. COMPUTING DATA SUMMARY...')
 prep_summaryData(all_sID)
 
 % H1 analysis:
-disp('...TESTING HYPOTHESIS 1 NOW...')
+disp('4/7. TESTING HYPOTHESIS 1 NOW...')
 H1_metacogSensitivity
 
 % H2 analysis:
-disp('...TESTING HYPOTHESIS 2 NOW...')
+disp('5/7. TESTING HYPOTHESIS 2 NOW...')
 H2_repeatedTrajectories
 
 % H3 analysis:
-disp('...TESTING HYPOTHESIS 3 NOW...')
+disp('6/7. TESTING HYPOTHESIS 3 NOW...')
 H3_temporalMetacognitiveSensitivity
 
 % H4 analysis:
-disp('...TESTING HYPOTHESIS 4 NOW...')
+disp('7/7. TESTING HYPOTHESIS 4 NOW...')
 H4_repeatedSessions
 
 end
