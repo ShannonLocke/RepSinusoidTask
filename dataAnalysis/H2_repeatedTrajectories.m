@@ -31,7 +31,7 @@ load(fname, 'summaryData');
 nSs = length(summaryData.sID);
 sIDs = strsplit(num2str(summaryData.sID));
 tidx = abs(summaryData.trajectory); % trajectory ID
-N = length(unique(tidx(:,1))); % number of trajectories
+N = length(unique(tidx(~isnan(tidx)))); % number of trajectories
 
 %% Conf by trajectory:
 
@@ -78,8 +78,7 @@ semDiffConf = std(diffConf)/sqrt(N);
 for nn = 1:nSs % EACH subject
     
     fig = figure;
-    txt_sID =  num2str(summaryData.sID(nn));
-    sgtitle(['Participant #' txt_sID],'FontSize',18)
+    sgtitle(['Participant #' sIDs{nn}],'FontSize',18)
     
     % RMSE by ranked trajectory:
     subplot(3,2,1); hold on
@@ -167,7 +166,7 @@ for nn = 1:nSs % EACH subject
     axis square
     
     % Save:
-    fname = [dataToPath_fig 'H2_s' txt_sID];
+    fname = [dataToPath_fig 'H2_s' sIDs{nn}];
     print(fig,fname,'-dpdf','-bestfit')
     
 end
@@ -249,7 +248,7 @@ set(gca,'linewidth',2);
 axis square
 
 % Save:
-fname = [dataToPath_fig 'H2_all' txt_sID];
+fname = [dataToPath_fig 'H2_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
 %% Statistical test:

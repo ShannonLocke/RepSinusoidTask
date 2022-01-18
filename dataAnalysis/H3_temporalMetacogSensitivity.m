@@ -51,18 +51,17 @@ end
 %% Plot results:
 
 % Individual plots:
-fig = figure;
 colorVals = [linspace(0,1,6); zeros([1,6]); linspace(1,0,6)]';
 for nn = 1:nSs % EACH subject
     
     % Quantile-quantile plots:
-    txt_sID =  num2str(summaryData.sID(nn));
+    fig = figure;
     subplot(2,1,1); hold on
     plot([0,1], [0,1], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
     for tt = 1:6
         plot(pLow{nn,tt}, pHigh{nn,tt}, 'Color', colorVals(tt,:),'Linewidth', 2)
     end
-    title(['Participant #' txt_sID])
+    title(['Participant #' sIDs{nn}])
     xlabel('Cumulative P(RMSE | "worse")')
     ylabel('Cumulative P(RMSE | "better")')
     xticks(0:0.2:1)
@@ -135,21 +134,21 @@ errTrace_mean = NaN([6000,nSs]);
 errTrace_sd = NaN([6000,nSs]);
 
 % Compute mean error curve:
-for ss = 1:nSs % EACH subject
+for nn = 1:nSs % EACH subject
     
     % Get data:
-    fname = [dataFromPath 'processed/processedEyeData_s' num2str(summaryData.sID(ss)) '.mat'];
+    fname = [dataFromPath 'processed/processedEyeData_s' num2str(summaryData.sID(nn)) '.mat'];
     load(fname,'eyeDataPro')
     getError = eyeDataPro.errorEuclid;
-    errTrace_mean(:,ss) = mean(getError,2);
-    errTrace_sd(:,ss) = std(getError,0,2);
+    errTrace_mean(:,nn) = mean(getError,2);
+    errTrace_sd(:,nn) = std(getError,0,2);
     t = eyeDataPro.t;
     
     % Plot mean error curve of individuals:
     fig = figure; hold on
-    plot(t, errTrace_mean(:,ss), 'k-', 'LineWidth', 2)
-    plot(t, errTrace_mean(:,ss) - errTrace_sd(:,ss), 'r--', 'LineWidth', 2)
-    plot(t, errTrace_mean(:,ss) + errTrace_sd(:,ss), 'r--', 'LineWidth', 2)
+    plot(t, errTrace_mean(:,nn), 'k-', 'LineWidth', 2)
+    plot(t, errTrace_mean(:,nn) - errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
+    plot(t, errTrace_mean(:,nn) + errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
     title(['Participant #' sIDs{nn}])
     xlabel('Time in Trial (sec)')
     ylabel('Euclidean Error (deg)')

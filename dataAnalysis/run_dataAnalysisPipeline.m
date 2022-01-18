@@ -64,7 +64,7 @@ H1_metacogSensitivity(resDir)
 
 %% H2 analysis:
 disp('5/7. TESTING HYPOTHESIS 2 NOW...')
-H2_repeatedTrajectories(resDir)
+H2_repeatedTrajectories(resDir) 
 
 %% H3 analysis:
 disp('6/7. TESTING HYPOTHESIS 3 NOW...')
