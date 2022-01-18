@@ -111,7 +111,7 @@ for nn = 1:nSs % EACH participant
     trajectory_training = cell2mat(expData.expDesign.designMat(idxR)');
     trajectory_training = trajectory_training(:,1) .* trajectory_training(:,2);
     tmpT = table(sID*ones([N_training,1]), ... % subjectID
-        repelem((1:nSessions)', nTrainTrials), ... % session
+        repelem((1:nSessions), nTrainTrials)', ... % session
         ones([N_training,1]), ... % trainingYN
         repmat((1:nTrainTrials)', [nSessions,1]), ... % trial
         trajectory_training, ... % trajectory signed by direction
@@ -124,28 +124,29 @@ for nn = 1:nSs % EACH participant
         NaN([N_training,1]), ... % ...
         NaN([N_training,1]), ... % ...
         NaN([N_training,1])); % RMSE in 1 sec bins
+    tmpT.Properties.VariableNames = tableVarNamesForOSF;
     if nn == 1
         T = tmpT;
-        T.Properties.VariableNames = tableVarNamesForOSF;
+        % T.Properties.VariableNames = tableVarNamesForOSF;
     else
         T = [T; tmpT];
     end
     
     % Create table of test eye data for OSF csv:
     tmpT = table(sID*ones([N,1]), ... % subjectID
-        summaryData.session(:,nn), ... % session
+        summaryData.session(1:N,nn), ... % session
         zeros([N,1]), ... % trainingYN
-        summaryData.trial(:,nn), ... % trial
-        summaryData.trajectory(:,nn), ... % trajectory signed by direction
-        summaryData.conf(:,nn), ... % confidence
-        summaryData.RT(:,nn), ... % RT
-        summaryData.RMSE(:,nn), ... % RMSE <== not computed because unused
-        summaryData.binnedRMSE(:,1,nn), ... % RMSE in 1 sec bins
-        summaryData.binnedRMSE(:,2,nn), ... % ...
-        summaryData.binnedRMSE(:,3,nn), ... % ...
-        summaryData.binnedRMSE(:,4,nn), ... % ...
-        summaryData.binnedRMSE(:,5,nn), ... % ...
-        summaryData.binnedRMSE(:,6,nn)); % RMSE in 1 sec bins
+        summaryData.trial(1:N,nn), ... % trial
+        summaryData.trajectory(1:N,nn), ... % trajectory signed by direction
+        summaryData.conf(1:N,nn), ... % confidence
+        summaryData.RT(1:N,nn), ... % RT
+        summaryData.RMSE(1:N,nn), ... % RMSE <== not computed because unused
+        summaryData.binnedRMSE(1:N,1,nn), ... % RMSE in 1 sec bins
+        summaryData.binnedRMSE(1:N,2,nn), ... % ...
+        summaryData.binnedRMSE(1:N,3,nn), ... % ...
+        summaryData.binnedRMSE(1:N,4,nn), ... % ...
+        summaryData.binnedRMSE(1:N,5,nn), ... % ...
+        summaryData.binnedRMSE(1:N,6,nn)); % RMSE in 1 sec bins
     tmpT.Properties.VariableNames = tableVarNamesForOSF;
     T = [T; tmpT];
     
