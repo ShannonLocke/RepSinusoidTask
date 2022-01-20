@@ -41,9 +41,10 @@ pHigh = cell([nSs,6]);
 
 % Get temporal AUROCs:
 for nn = 1:nSs % EACH subject
-    conf = summaryData.conf(:,nn);
+    N = sum(~isnan(summaryData.conf(:,nn))); % number of trials
+    conf = summaryData.conf(1:N,nn);
     for tt = 1:6 % EACH 1s time bin
-        RMSE = squeeze(summaryData.binnedRMSE(:,tt,nn));
+        RMSE = squeeze(summaryData.binnedRMSE(1:N,tt,nn));
         [AUROC(nn,tt), pLow{nn,tt}, pHigh{nn,tt}, ~] = getAUROC(RMSE,conf);
     end
 end
@@ -149,7 +150,7 @@ for nn = 1:nSs % EACH subject
     plot(t, errTrace_mean(:,nn), 'k-', 'LineWidth', 2)
     plot(t, errTrace_mean(:,nn) - errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
     plot(t, errTrace_mean(:,nn) + errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
-    title(['Participant #' sIDs{nn}])
+    title('Group Error Trace')
     xlabel('Time in Trial (sec)')
     ylabel('Euclidean Error (deg)')
     xlim([0, 6])

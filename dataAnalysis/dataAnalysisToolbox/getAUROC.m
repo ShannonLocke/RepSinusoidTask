@@ -14,6 +14,14 @@ elseif min(c) == -1 % worse coded as -1
     c = c == -1;
 end
 
+% Remove NaN values which can mess with the calculation:
+removeNaNs = isnan(e) || isnan(c);
+if any(removeNaNs)
+    warning([num2str(sum(removeNaNs)), ' NaN entries will be removed from the AUROC calculation'])
+    e = e(~removeNaNs);
+    c = c(~removeNaNs);
+end
+
 % Count number of low/high reports:
 nLow = sum(c);
 nHigh = sum(~c);

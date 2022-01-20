@@ -35,7 +35,6 @@ sIDs = strsplit(num2str(summaryData.sID));
 
 % Bootstrap
 iterBS = 1000; % number of bootstrap iterations
-N = length(summaryData.conf); % number of trials
 
 %% Compute AUROCs:
 
@@ -49,7 +48,8 @@ pHigh = cell([nSs,1]);
 for nn = 1:nSs % EACH subject
     
     % Point estimate:
-    [AUROC(nn), pLow{nn}, pHigh{nn}, ~] = getAUROC(summaryData.RMSE(:,nn),summaryData.conf(:,nn));
+    N = sum(~isnan(summaryData.conf(:,nn))); % number of trials
+    [AUROC(nn), pLow{nn}, pHigh{nn}, ~] = getAUROC(summaryData.RMSE(1:N,nn),summaryData.conf(1:N,nn));
     
     % Bootstrap 95% CIs:
     AUROC_BS = NaN([1,iterBS]);
