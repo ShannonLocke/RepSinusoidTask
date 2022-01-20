@@ -76,24 +76,24 @@ for nn = 1:nSs % EACH subject
         'FontSize', 18)
     
     % Histograms of confidence split error:
-    subplot(1,2,1); hold on
+    subplot(2,1,1); hold on
     Err = summaryData.RMSE(:,nn);
     mE = mean(Err);
     plot(mE * [1,1], [0,30], 'k--', 'Linewidth', 1, 'HandleVisibility','off') % mean error
     cidx = (summaryData.conf(:,nn) == 1); % high confidence trials
-    histogram(Err(cidx), 'BinEdges', 0:0.1:4)
+    histogram(Err(cidx), 'BinEdges', 0:0.1:5)
     cidx = (summaryData.conf(:,nn) == -1); % low confidence trials
-    histogram(Err(cidx), 'BinEdges', 0:0.1:4)
+    histogram(Err(cidx), 'BinEdges', 0:0.1:5)
     title(['Error Distributions'])
     xlabel('Euclidean Error (deg)')
     ylabel('Frequency')
-    xlim([0, 4])
+    xlim([0, 5])
     axis square
     set(gca,'FontSize',16);
     set(gca,'linewidth',2);
     
     % Individual quantile-quantile plots:
-    subplot(1,2,2); hold on
+    subplot(2,1,2); hold on
     plot([0,1], [0,1], 'k--', 'Linewidth', 1)
     plot(pLow{nn}, pHigh{nn}, 'r', 'Linewidth', 2)
     title('Metacogntive Sensitivity')
