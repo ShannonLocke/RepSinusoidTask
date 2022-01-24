@@ -6,4 +6,5 @@ node_modules/
 /dataAnalysis/results
 /dataAnalysis/results_pilot
 *.m~
+*.pdf
 results_SPC_TESTRUN_*.mat
