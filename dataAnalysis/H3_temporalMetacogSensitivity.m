@@ -198,11 +198,13 @@ print(fig,fname,'-dpdf','-bestfit')
 
 disp('T-test results:...')
 [h,p,ci,stats] = ttest(splitHalfDiff)
+effectSize = stats.tstat/sqrt(nSs);
+disp(['Effect size is ' num2str(effectSize,5)])
 
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID, AUROC(:,1), AUROC(:,2), AUROC(:,3), AUROC(:,4), ...
+T = table(summaryData.sID', AUROC(:,1), AUROC(:,2), AUROC(:,3), AUROC(:,4), ...
     AUROC(:,5), AUROC(:,6));
 T.Properties.VariableNames = {'subjectID', 'AUROCsec1', 'AUROCsec2', ...
     'AUROCsec3', 'AUROCsec4', 'AUROCsec5', 'AUROCsec6'};
@@ -210,9 +212,10 @@ fname = [dataToPath_osfFiles 'H3_temporalAUROCs_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-% Group results:
-T = table(mean(splitHalfDiff), std(splitHalfDiff)/sqrt(nSs), stats.tstat, stats.df, p, h);
-T.Properties.VariableNames = {'meanSHDiff', 'semSHDiff', 'tStat', 'df', 'pVal', 'SigAboveChance'};
+T = table(mean(splitHalfDiff), std(splitHalfDiff)/sqrt(nSs), stats.tstat, ...
+    stats.df, p, h, effectSize);
+T.Properties.VariableNames = {'meanSHDiff', 'semSHDiff', 'tStat', 'df', ...
+    'pVal', 'SigAboveChance', 'CohensD'};
 fname = [dataToPath_osfFiles 'H3_temporalAUROCs_groupResults.csv'];
 writetable(T,fname);
 

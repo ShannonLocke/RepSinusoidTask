@@ -130,18 +130,21 @@ print(fig,fname,'-dpdf','-bestfit')
 
 disp('T-test results:...')
 [h,p,ci,stats] = ttest(AUROC-0.5)
+effectSize = stats.tstat/sqrt(nSs);
+disp(['Effect size is ' num2str(effectSize,5)])
 
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID, AUROC, CIs(:,1), CIs(:,2), CIs(:,1)>0.5);
+T = table(summaryData.sID', AUROC, CIs(:,1), CIs(:,2), CIs(:,1)>0.5);
 T.Properties.VariableNames = {'subjectID', 'AUROC', 'lower95CI', 'upper95CI', 'SigAboveChance'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-T = table(mean(AUROC), std(AUROC)/sqrt(nSs), stats.tstat, stats.df, p, h);
-T.Properties.VariableNames = {'meanAUROC', 'semAUROC', 'tStat', 'df', 'pVal', 'SigAboveChance'};
+T = table(mean(AUROC), std(AUROC)/sqrt(nSs), stats.tstat, stats.df, p, h, effectSize);
+T.Properties.VariableNames = {'meanAUROC', 'semAUROC', 'tStat', 'df', ...
+    'pVal', 'SigAboveChance', 'CohensD'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_groupResults.csv'];
 writetable(T,fname);
 

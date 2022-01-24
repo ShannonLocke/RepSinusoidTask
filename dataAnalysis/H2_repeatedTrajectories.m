@@ -250,6 +250,8 @@ print(fig,fname,'-dpdf','-bestfit')
 
 disp('T-test results:...')
 [h,p,ci,stats] = ttest(avgDiffConf)
+effectSize = stats.tstat/sqrt(nSs);
+disp(['Effect size is ' num2str(effectSize,5)])
 
 %% Prep summary data for OSF:
 
