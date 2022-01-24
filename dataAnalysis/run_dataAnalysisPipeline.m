@@ -42,6 +42,7 @@ for nn = 1:nSs
     getFolderName = sOnFile(nn).name;
     all_sID(nn) = str2num(getFolderName(2:end));
 end
+all_sID2 = all_sID; % full list for generating data summary files
 
 % If option selected, limit to only unprocessed Ss data:
 onlyNewDataYN = false;
@@ -55,7 +56,6 @@ if onlyNewDataYN
         all_sID(all_sID == sel_sID) = [];
     end
 end
-% <== ISSUE: WON'T PROCESSING ONLY NEW AFFECT THE DATA SUMMARY?
 
 %% Extract the raw data:
 disp('1/7. EXTRACTING THE RAW DATA...')
@@ -67,7 +67,7 @@ prep_processData(all_sID, resDir)
 
 %% Compute data summary:
 disp('3/7. COMPUTING DATA SUMMARY...')
-prep_summaryData(all_sID, testDataYN, resDir)
+prep_summaryData(all_sID2, testDataYN, resDir)
 
 %% H1 analysis:
 disp('4/7. TESTING HYPOTHESIS 1 NOW...')
