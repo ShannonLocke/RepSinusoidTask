@@ -15,7 +15,18 @@ function [] = run_dataAnalysisPipeline()
 testDataYN = false; % analyse test data or pilot data
 
 % Ensure correct folder structure:
-% <== DO THIS!!!
+folderNames = {'forOSF', 'H1_metacogSensitivity', 'H2_repeatedTrajectories', ...
+    'H3_temporalAUROCS', 'H4_sessionEffect', 'processed', 'raw'};
+folderPrefix = 'results';
+if ~testDataYN
+    folderPrefix = [folderPrefix '_pilot']; 
+end
+for ii = 1:length(folderNames)
+   getDir = [folderPrefix '/' folderNames{ii}];
+   if ~isfolder(getDir)
+       mkdir(getDir)
+   end
+end
 
 % Find the participant IDs of available data:
 if testDataYN
