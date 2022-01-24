@@ -150,14 +150,14 @@ for nn = 1:nSs % EACH subject
     plot(t, errTrace_mean(:,nn), 'k-', 'LineWidth', 2)
     plot(t, errTrace_mean(:,nn) - errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
     plot(t, errTrace_mean(:,nn) + errTrace_sd(:,nn), 'r--', 'LineWidth', 2)
-    title('Group Error Trace')
+    title(['Participant #' sIDs{nn}])
     xlabel('Time in Trial (sec)')
     ylabel('Euclidean Error (deg)')
     xlim([0, 6])
     ylim([0, 6])
     set(gca,'FontSize',16);
     set(gca,'linewidth',2);
-    fname = [dataToPath_fig 'H3_errorTrace_s' sIDs{nn}];
+    fname = [resDir 'errorTraces/errorTrace_s' sIDs{nn}];
     print(fig,fname,'-dpdf','-bestfit')
     
 end
@@ -166,14 +166,14 @@ end
 fig = figure; hold on
 plot(t, errTrace_mean, 'k-', 'LineWidth', 1)
 plot(t, mean(errTrace_mean,2), 'r-', 'LineWidth', 2)
-title(['Participant #' sIDs{nn}])
+title('Group Error Trace')
 xlabel('Time in Trial (sec)')
 ylabel('Euclidean Error (deg)')
 xlim([0, 6])
 ylim([0, 6])
 set(gca,'FontSize',16);
 set(gca,'linewidth',2);
-fname = [dataToPath_fig 'H3_errorTrace_all'];
+fname = [resDir 'errorTraces/errorTrace_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
 %% Split-half difference in AUROC:

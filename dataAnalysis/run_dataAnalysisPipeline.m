@@ -16,7 +16,7 @@ testDataYN = false; % analyse test data or pilot data
 
 % Ensure correct folder structure:
 folderNames = {'forOSF', 'H1_metacogSensitivity', 'H2_repeatedTrajectories', ...
-    'H3_temporalAUROCS', 'H4_sessionEffect', 'processed', 'raw'};
+    'H3_temporalAUROCS', 'H4_sessionEffect', 'processed', 'raw', 'errorTraces'};
 folderPrefix = 'results';
 if ~testDataYN
     folderPrefix = [folderPrefix '_pilot']; 
