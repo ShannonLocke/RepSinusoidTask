@@ -38,7 +38,6 @@ N = length(unique(tidx(~isnan(tidx)))); % number of trajectories
 % Preallocate:
 conf = NaN([N,nSs]);
 RMSE  = NaN([N,nSs]);
-RMSE_byConf  = NaN([N,nSs,2]);
 
 % Compute performance and proportion judged "better" per trajectory:
 for nn = 1:nSs % EACH subject
@@ -255,16 +254,23 @@ disp(['Effect size is ' num2str(effectSize,5)])
 
 %% Prep summary data for OSF:
 
-% % Individual results:
-% T = table(summaryData.sID, AUROC(:,1), AUROC(:,2));
-% T.Properties.VariableNames = {'subjectID', 'session1AUROC', 'session2AUROC'};
-% fname = [dataToPath_osfFiles 'H4_sessionEffect_indivResults.csv'];
-% writetable(T,fname);
-% 
-% % Group results:
-% T = table(mean(sessionEffect), std(sessionEffect)/sqrt(nSs), stats.tstat, stats.df, p, h);
-% T.Properties.VariableNames = {'meanDiffAUROC', 'semDiffAUROC', 'tStat', 'df', 'pVal', 'SigAboveChance'};
-% fname = [dataToPath_osfFiles 'H4_sessionEffect_groupResults.csv'];
-% writetable(T,fname);
+% Individual results:
+conf_betterRMSE = squeeze(conf_medSplit(:,:,1));
+conf_worseRMSE = squeeze(conf_medSplit(:,:,2));
+T = table(repelem(summaryData.sID',N), repmat((1:N)',[nSs,1]), RMSE(:), ...
+    zRMSE(:), conf(:), conf_betterRMSE(:), conf_worseRMSE(:), diffConf(:));
+T.Properties.VariableNames = {'subjectID', 'trajectoryID', 'RMSE', ...
+    'normalisedRMSE', 'avgConf', 'medSplitConfBetter', ...
+    'medSplitConfWorse', 'confDiff'};
+fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_indivResults.csv'];
+writetable(T,fname);
+ 
+% Group results:
+T = table(mean(avgDiffConf), std(avgDiffConf)/sqrt(nSs), stats.tstat, ...
+    stats.df, p, h, effectSize);
+T.Properties.VariableNames = {'meanDiffAUROC', 'semDiffAUROC', 'tStat', ...
+    'df', 'pVal', 'SigAboveChance', 'CohensD'};
+fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_groupResults.csv'];
+writetable(T,fname);
 
 end
