@@ -132,7 +132,7 @@ for nn = 1:nSs % EACH subject
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
     
-    % Conf difference between better and worse halves:
+    % Conf difference between better and worse 1/2:
     subplot(3,2,4); hold on
     bar(diffConf(diffRank,nn))
     title('Confidence Difference')
@@ -144,7 +144,7 @@ for nn = 1:nSs % EACH subject
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
     
-    % Average RMSE difference between "better" and "worse":
+    % Average confidence difference between better and worse 1/2:
     subplot(3,2,6); hold on
     bar(avgDiffConf(nn))
     er = errorbar(1, avgDiffConf(nn), semDiffConf(nn));
@@ -152,7 +152,7 @@ for nn = 1:nSs % EACH subject
     er.LineStyle = 'none';
     title('Avgerage Confidence Diff.')
     xlabel('Ranked trajectory')
-    ylabel('\Delta RMSE (deg)')
+    ylabel('\Delta Prop. "better"')
     xticks(NaN)
     yticks(-0.4:0.2:0.4)
     xlim([0,2])
@@ -205,7 +205,7 @@ ylim([0,1])
 set(gca,'FontSize',14);
 set(gca,'linewidth',2);
 
-% RMSE difference between "better" and "worse":
+% Confidence difference between better and worse 1/2:
 subplot(2,2,2); hold on
 barVals = mean(diffConf(diffRank,:),2);
 semVals = std(diffConf(diffRank,:),0,2)/sqrt(nSs);
@@ -215,14 +215,14 @@ er.Color = [0 0 0];
 er.LineStyle = 'none';
 title('Confidence Difference')
 xlabel('Ranked trajectory')
-ylabel('\Delta RMSE (deg)')
+ylabel('\Delta Prop. "better"')
 yticks(-0.4:0.2:0.4)
 xlim([0,(N+1)])
 ylim([-0.5,0.5])
 set(gca,'FontSize',14);
 set(gca,'linewidth',2);
 
-% Average RMSE difference between "better" and "worse":
+% Average confidence difference between better and worse 1/2:
 subplot(2,2,4); hold on
 barVals = mean(avgDiffConf);
 semVals = std(avgDiffConf)/sqrt(nSs);
@@ -232,7 +232,7 @@ er.Color = [0 0 0];
 er.LineStyle = 'none';
 title('Avgerage Confidence Diff.')
 xlabel('Ranked trajectory')
-ylabel('\Delta RMSE (deg)')
+ylabel('\Delta Prop. "better"')
 xticks(NaN)
 yticks(-0.4:0.2:0.4)
 xlim([0,2])
@@ -268,7 +268,7 @@ writetable(T,fname);
 % Group results:
 T = table(mean(avgDiffConf), std(avgDiffConf)/sqrt(nSs), stats.tstat, ...
     stats.df, p, h, effectSize);
-T.Properties.VariableNames = {'meanDiffAUROC', 'semDiffAUROC', 'tStat', ...
+T.Properties.VariableNames = {'meanConfDiff', 'semConfDiff', 'tStat', ...
     'df', 'pVal', 'SigAboveChance', 'CohensD'};
 fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_groupResults.csv'];
 writetable(T,fname);
