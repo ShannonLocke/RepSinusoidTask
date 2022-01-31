@@ -1,4 +1,4 @@
-function [] = prep_trajectories()
+function [] = prep_trajectories(resDir)
 % This script prepares the target trajectory information for archiving and
 % further analysis. Specifically, interpolation of the target trajectory to 
 % 1000 Hz sampling rate.
@@ -20,8 +20,8 @@ function [] = prep_trajectories()
 
 % Directory and file names:
 dataFromPath = '../experimentFiles/';
-dataToPath_matFiles = 'output_data/';
-dataToPath_osfFiles = 'output_data/forOSF/';
+dataToPath_matFiles = resDir;
+dataToPath_osfFiles = [resDir 'forOSF/'];
 fname = {'trajectories_training', 'trajectories_test'};
 trainingYN = [true false];
 
@@ -31,9 +31,7 @@ for ii = 1:2
 
 % Load trajectory data:
 load([dataFromPath, fname{ii}], 'ampInfo', 'freqInfo', 't', 'targ', 'targVel')
-ampInfo = ampInfo';
-freqInfo = freqInfo';
-[nTraj,nSin] = size(freqInfo);
+[nSin,nTraj] = size(freqInfo);
 nt = length(t);
 
 % Get general info about each trajectory:
