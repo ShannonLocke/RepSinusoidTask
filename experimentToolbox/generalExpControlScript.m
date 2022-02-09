@@ -83,7 +83,7 @@ while continueTestingYN
     
     % Determine mode, condition:
     if experimenterYN % experimenter, enter mode (default: demo)
-        if hardware.screenID == 0 % only one screen, default to demo
+        if hardware.screenID == 0 % only one screen, default to preselected mode
             mode = setExperimenterMode;
         else % using second screen, ask for mode
             phaseOK = false;
