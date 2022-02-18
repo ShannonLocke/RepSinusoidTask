@@ -83,7 +83,7 @@ if plotYN
         colorbar
         caxis([0,maxSpeed])
         ylim([-(maxDev_mean+2*maxDev_sd),(maxDev_mean+2*maxDev_sd)])
-        xlabel('Time in Trial')
+        xlabel('Time in Trial (sec)')
         ylabel('Horizontal Position (deg)')
         subplot(2,1,2); hold on
         scatter(t,targVel(:,nn),[],targSpeed(:,nn))
@@ -93,7 +93,7 @@ if plotYN
         plot([0 runDur],[0 0], 'k-')
         plot([0 runDur],[5 5], 'k--')
         plot([0 runDur],[-5 -5], 'k--')
-        xlabel('Time in Trial')
+        xlabel('Time in Trial (sec)')
         ylabel('Horizontal Velocity (deg/s)')
     end
 end
