@@ -12,7 +12,8 @@ function [] = run_dataAnalysisPipeline()
 %% PREAMBLE:
 
 % Switchboard:
-testDataYN = false; % analyse test data or pilot data
+testDataYN = true; % analyse test data or pilot data
+onlyNewDataYN = false; % limit to only unprocessed Ss data
 
 % Ensure correct folder structure:
 folderNames = {'forOSF', 'H1_metacogSensitivity', 'H2_repeatedTrajectories', ...
@@ -45,7 +46,6 @@ end
 all_sID2 = all_sID; % full list for generating data summary files
 
 % If option selected, limit to only unprocessed Ss data:
-onlyNewDataYN = false;
 if onlyNewDataYN
     dataFilePattern = 'output_data/processed/processedEyeData_s*.mat';
     sOnFile = dir(dataFilePattern);

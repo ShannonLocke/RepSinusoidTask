@@ -89,6 +89,7 @@ for nn = 1:nSs % EACH subject
     ylabel('Frequency')
     xlim([0, 5])
     axis square
+    legend({'High Conf','Low Conf'},'Location','NorthEast')
     set(gca,'FontSize',16);
     set(gca,'linewidth',2);
     
