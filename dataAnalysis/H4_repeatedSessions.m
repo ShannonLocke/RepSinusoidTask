@@ -101,7 +101,7 @@ disp('T-test results:...')
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID, AUROC(:,1), AUROC(:,2));
+T = table(summaryData.sID', AUROC(:,1), AUROC(:,2));
 T.Properties.VariableNames = {'subjectID', 'session1AUROC', 'session2AUROC'};
 fname = [dataToPath_osfFiles 'H4_sessionEffect_indivResults.csv'];
 writetable(T,fname);
