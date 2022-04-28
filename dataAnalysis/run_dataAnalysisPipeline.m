@@ -13,7 +13,7 @@ function [] = run_dataAnalysisPipeline()
 
 % Switchboard:
 testDataYN = true; % analyse test data or pilot data
-onlyNewDataYN = false; % limit to only unprocessed Ss data
+onlyNewDataYN = true; % limit to only unprocessed Ss data
 
 % Ensure correct folder structure:
 folderNames = {'forOSF', 'H1_metacogSensitivity', 'H2_repeatedTrajectories', ...

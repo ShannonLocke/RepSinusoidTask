@@ -273,4 +273,11 @@ T.Properties.VariableNames = {'meanConfDiff', 'semConfDiff', 'tStat', ...
 fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_groupResults.csv'];
 writetable(T,fname);
 
+%% Prep summary data for VSS poster:
+y = 1:N; y = y(:);
+barVals = mean(diffConf(diffRank,:),2);
+semVals = std(diffConf(diffRank,:),0,2)/sqrt(nSs);
+T = table(y, barVals, semVals);
+fname = ['data_repeatedTrajectories.txt'];
+writetable(T,fname,'Delimiter',' ')
 end

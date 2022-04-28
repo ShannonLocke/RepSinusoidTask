@@ -149,4 +149,15 @@ T.Properties.VariableNames = {'meanAUROC', 'semAUROC', 'tStat', 'df', ...
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_groupResults.csv'];
 writetable(T,fname);
 
+%% Prep summary data for VSS poster:
+maxLengthCell=max(cellfun('size',pLow,2)); % finding the longest vector in the cell array
+curvesAUROC = NaN([maxLengthCell,2*nSs]); % pre allocate storage vector
+for ii = 1:length(pLow)
+    idx_low = 2*(ii-1) + 1;
+    idx_high = idx_low + 1;
+    getLen = length(pLow{ii});
+    curvesAUROC(1:getLen,idx_low) = pLow{ii}';
+    curvesAUROC(1:getLen,idx_high) = pHigh{ii}';
+end
+
 end
