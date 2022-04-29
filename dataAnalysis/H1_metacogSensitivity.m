@@ -150,14 +150,33 @@ fname = [dataToPath_osfFiles 'H1_metacogSensitivity_groupResults.csv'];
 writetable(T,fname);
 
 %% Prep summary data for VSS poster:
+
+% Get subject curves:
 maxLengthCell=max(cellfun('size',pLow,2)); % finding the longest vector in the cell array
 curvesAUROC = NaN([maxLengthCell,2*nSs]); % pre allocate storage vector
+colNames = {};
 for ii = 1:length(pLow)
     idx_low = 2*(ii-1) + 1;
     idx_high = idx_low + 1;
     getLen = length(pLow{ii});
     curvesAUROC(1:getLen,idx_low) = pLow{ii}';
     curvesAUROC(1:getLen,idx_high) = pHigh{ii}';
+    colNames{idx_low} = ['x' num2str(ii)];
+    colNames{idx_high} = ['y' num2str(ii)];
 end
 
+% Get group average curve:
+equiv_dPrime = norminv(mean(AUROC)) * sqrt(2); % equivalent d' for the mean AUROC
+xvals = linspace(-3,3,maxLengthCell)'; % set sampling spacing to fit current matrix
+curvesAUROC(:,idx_low+2) = normcdf(xvals-equiv_dPrime/2); % ``worse'' distribution cumulative value
+curvesAUROC(:,idx_high+2) = normcdf(xvals+equiv_dPrime/2); % ``better'' distribution cumulative value
+curvesAUROC([end-1 end],[end-1 end]) = [1, 1; 1.1, 0]; % replace final two values to create triangle shape for shading
+colNames{idx_low+2} = 'xAll';
+colNames{idx_high+2} = 'yAll';
+
+% Export data file:
+T = array2table(curvesAUROC);
+T.Properties.VariableNames = colNames;
+fname = ['data_AUROCs.txt'];
+writetable(T,fname,'Delimiter',' ')
 end
