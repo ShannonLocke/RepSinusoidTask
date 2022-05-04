@@ -1,6 +1,7 @@
 %% Get an example participant's data and trajectory info:
 load('results/processed/processedEyeData_s555.mat','eyeDataPro')
 load('results/trajectoryInformation.mat','trajInfo')
+addpath('dataAnalysisToolbox')
 
 %% Select example trial, get info for plotting:
 tidx = 250; % trial index
@@ -8,12 +9,16 @@ traj = abs(eyeDataPro.trajectory(tidx));
 dir = sign(eyeDataPro.trajectory(tidx)); 
 t = eyeDataPro.t;
 xEye = eyeDataPro.eyeX(:,tidx);
-vEye = abs(eyeDataPro.filtEyeVelocity(:,tidx));
+% vEye = abs(eyeDataPro.filtEyeVelocity(:,tidx)); % <== not done!
 xTarg = dir * trajInfo.targ_1000Hz(:,traj);
 vTarg = abs(trajInfo.targVel_1000Hz(:,traj));
 
-% Temporary fix for velocity bug...
-vEye = abs([0; diff(xEye)/(1/1000)]);
+% Smooth velocity signal here:
+pOrder = 2;
+fLength = 51;
+dx = denoiseSG(xEye,1000,pOrder,fLength,0);
+vEye = [dx(1:(end-1),:,2); 0];
+vEye = abs(vEye);
 
 %% Downsample for faster plotting:
 skip = 10;
