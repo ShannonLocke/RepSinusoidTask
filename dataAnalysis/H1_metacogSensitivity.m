@@ -174,6 +174,14 @@ curvesAUROC([end-1 end],[end-1 end]) = [1, 1; 1.1, 0]; % replace final two value
 colNames{idx_low+2} = 'xAll';
 colNames{idx_high+2} = 'yAll';
 
+% Get visuomotor curve (Locke et al., 2020):
+equiv_dPrime = norminv(0.68) * sqrt(2); % equivalent d' for the mean AUROC
+curvesAUROC(:,idx_low+4) = normcdf(xvals-equiv_dPrime/2); % ``worse'' distribution cumulative value
+curvesAUROC(:,idx_high+4) = normcdf(xvals+equiv_dPrime/2); % ``better'' distribution cumulative value
+curvesAUROC([end-1 end],[end-1 end]) = [1, 1; 1.1, 0]; % replace final two values to create triangle shape for shading
+colNames{idx_low+4} = 'xVM';
+colNames{idx_high+4} = 'yVM';
+
 % Export data file:
 T = array2table(curvesAUROC);
 T.Properties.VariableNames = colNames;
