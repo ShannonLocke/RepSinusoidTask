@@ -47,12 +47,12 @@ all_sID2 = all_sID; % full list for generating data summary files
 
 % If option selected, limit to only unprocessed Ss data:
 if onlyNewDataYN
-    dataFilePattern = 'output_data/processed/processedEyeData_s*.mat';
+    dataFilePattern = [resDir 'processed/processedEyeData_s*.mat'];
     sOnFile = dir(dataFilePattern);
     nSs = length(sOnFile);
     for nn = 1:nSs
         sel_sID = sOnFile(nn).name;
-        sel_sID = str2num(sel_sID(13:15));
+        sel_sID = str2num(sel_sID(19:21));
         all_sID(all_sID == sel_sID) = [];
     end
 end
