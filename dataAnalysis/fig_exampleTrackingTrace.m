@@ -1,10 +1,10 @@
 %% Get an example participant's data and trajectory info:
-load('results/processed/processedEyeData_s555.mat','eyeDataPro')
+load('results/processed/processedEyeData_s301.mat','eyeDataPro')
 load('results/trajectoryInformation.mat','trajInfo')
 addpath('dataAnalysisToolbox')
 
 %% Select example trial, get info for plotting:
-tidx = 250; % trial index
+tidx = 40; % randi(400); % trial index (trial 250 of s555 in poster)
 traj = abs(eyeDataPro.trajectory(tidx));
 dir = sign(eyeDataPro.trajectory(tidx)); 
 t = eyeDataPro.t;
@@ -20,7 +20,7 @@ dx = denoiseSG(xEye,1000,pOrder,fLength,0);
 vEye = [dx(1:(end-1),:,2); 0];
 vEye = abs(vEye);
 
-%% Downsample for faster plotting:
+% Downsample for faster plotting:
 skip = 10;
 idx = [1, skip:skip:6000]; % keep first and then every N
 t = t(idx);
@@ -35,9 +35,11 @@ subplot(2,1,1); hold on
 plot(t,xTarg)
 plot(t,xEye)
 ylabel('Position (deg)')
+title(['Trial ' num2str(tidx)])
 subplot(2,1,2); hold on
 plot(t,vTarg)
 plot(t,vEye)
+ylim([0,30])
 xlabel('Time in Trial (s)')
 ylabel('Speed (deg/s)')
 
