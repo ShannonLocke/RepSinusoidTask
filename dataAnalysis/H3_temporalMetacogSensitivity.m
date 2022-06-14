@@ -106,15 +106,15 @@ title('Temporal Metacognitive Sensitivity Curves')
 xlabel('Time in Trial (sec)')
 ylabel('Metacognitive Sensitivity')
 xlim([0,6])
-ylim([0.4,1])
+ylim([0.2,1])
 xticks(0:6)
 yticks(0:0.2:1)
-legend(sIDs,'Location','northWest','Box','Off')
+% legend(sIDs,'Location','northWest','Box','Off')
 set(gca,'FontSize',16);
 set(gca,'linewidth',2);
 subplot(2,1,2); hold on
 plot([0,6], [0.5,0.5], 'k--', 'Linewidth', 1)
-errorbar(0.5:5.5, mean(AUROC,1), std(AUROC,0,1)/sqrt(nSs), 'ro-', ...
+errorbar(0.5:5.5, nanmean(AUROC,1), nanstd(AUROC,0,1)/sqrt(sum(~isnan(AUROC(:,1)))), 'ro-', ...
     'Linewidth', 2, 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 title('Group Mean and SEM')
 xlabel('Time in Trial (sec)')

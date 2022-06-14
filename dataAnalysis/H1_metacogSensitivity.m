@@ -46,6 +46,16 @@ pHigh = cell([nSs,1]);
 
 % Get AUROC:
 for nn = 1:nSs % EACH subject
+    disp(['... Computing the AUROC of participant ' num2str(nn) ' of ' num2str(nSs)])
+    
+    % Check if AUROC can be computed (there is both low and high conf reports):
+    if all(summaryData.conf(:,nn)==1) || all(summaryData.conf(:,nn)==0)
+        AUROC(nn)= NaN;
+        pLow{nn} = NaN;
+        pHigh{nn} = NaN;
+        CIs(nn,:) = [NaN, NaN];
+        continue
+    end
     
     % Point estimate:
     N = sum(~isnan(summaryData.conf(:,nn))); % number of trials
@@ -61,12 +71,7 @@ for nn = 1:nSs % EACH subject
     
 end
 
-% Report summary statistics:
-meanAUROC = num2str(mean(AUROC),2);
-semAUROC = num2str(std(AUROC)/sqrt(nSs),2);
-display(['The AUROC mean & SEM is ' meanAUROC '+/-' semAUROC])
-
-%% Plot results:
+%% Plot individual results:
 
 for nn = 1:nSs % EACH subject
     
@@ -109,6 +114,19 @@ for nn = 1:nSs % EACH subject
     print(fig,fname,'-dpdf','-bestfit')
 end
 
+%% Summary statistics:
+
+% Remove uncalculable results:
+AUROC_all = AUROC;
+AUROC = AUROC(~isnan(AUROC));
+
+% Report summary statistics:
+meanAUROC = num2str(mean(AUROC),2);
+semAUROC = num2str(std(AUROC)/sqrt(length(AUROC)),2);
+display(['The AUROC mean & SEM is ' meanAUROC '+/-' semAUROC])
+
+%% Plot group results:
+
 % All participant's quantile-quantile plots:
 fig = figure; hold on
 plot([0,1], [0,1], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
@@ -120,7 +138,7 @@ xlabel('Cumulative P(RMSE | "worse")')
 ylabel('Cumulative P(RMSE | "better")')
 xticks(0:0.2:1)
 yticks(0:0.2:1)
-legend(sIDs,'Location','southEast','Box','Off')
+% legend(sIDs,'Location','southEast','Box','Off')
 axis square
 set(gca,'FontSize',16);
 set(gca,'linewidth',2);
@@ -131,19 +149,19 @@ print(fig,fname,'-dpdf','-bestfit')
 
 disp('T-test results:...')
 [h,p,ci,stats] = ttest(AUROC-0.5)
-effectSize = stats.tstat/sqrt(nSs);
+effectSize = stats.tstat/sqrt(length(AUROC));
 disp(['Effect size is ' num2str(effectSize,5)])
 
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID', AUROC, CIs(:,1), CIs(:,2), CIs(:,1)>0.5);
+T = table(summaryData.sID', AUROC_all, CIs(:,1), CIs(:,2), CIs(:,1)>0.5);
 T.Properties.VariableNames = {'subjectID', 'AUROC', 'lower95CI', 'upper95CI', 'SigAboveChance'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-T = table(mean(AUROC), std(AUROC)/sqrt(nSs), stats.tstat, stats.df, p, h, effectSize);
+T = table(mean(AUROC), std(AUROC)/sqrt(length(AUROC)), stats.tstat, stats.df, p, h, effectSize);
 T.Properties.VariableNames = {'meanAUROC', 'semAUROC', 'tStat', 'df', ...
     'pVal', 'SigAboveChance', 'CohensD'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_groupResults.csv'];

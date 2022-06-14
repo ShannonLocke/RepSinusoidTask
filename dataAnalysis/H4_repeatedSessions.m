@@ -50,11 +50,11 @@ end
 sessionEffect = diff(AUROC');
 
 % Report summary statistics:
-meanAUROC = num2str(mean(AUROC(:,1)),2);
-semAUROC = num2str(std(AUROC(:,1))/sqrt(nSs),2);
+meanAUROC = num2str(nanmean(AUROC(:,1)),2);
+semAUROC = num2str(nanstd(AUROC(:,1))/sqrt(sum(~isnan(AUROC(:,1)))),2);
 display(['The AUROC mean & SEM for Session 1 is ' meanAUROC '+/-' semAUROC])
-meanAUROC = num2str(mean(AUROC(:,2)),2);
-semAUROC = num2str(std(AUROC(:,2))/sqrt(nSs),2);
+meanAUROC = num2str(nanmean(AUROC(:,2)),2);
+semAUROC = num2str(nanstd(AUROC(:,2))/sqrt(sum(~isnan(AUROC(:,2)))),2);
 display(['The AUROC mean & SEM for Session 2 is ' meanAUROC '+/-' semAUROC])
 
 %% Plot results:
