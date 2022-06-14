@@ -152,14 +152,27 @@ for nn = 1:nSs % EACH participant
     
 end
 
-    %% Export main-task file for further Matlab processing:
-    disp('... Exporting mat file ...')
-    fname = [dataToPath_matFiles, 'trialSummaryDataSPC.mat'];
-    save(fname, 'summaryData')
-    
-    %% Export all eye data to csv for OSF:
-    disp('... Exporting csv file ...')
-    fname = [dataToPath_osfFiles, 'trialSummaryData.csv'];
-    writetable(T,fname);
+%% Perform data-exclusion checks:
+
+% Trials with RMSE >3SD or <-3SD from the mean:
+meanRMSE = repmat(mean(summaryData.RMSE),[N,1]);
+sdRMSE = repmat(std(summaryData.RMSE),[N,1]);
+summaryData.keepTrialYN = ones(size(summaryData.RMSE));
+summaryData.keepTrialYN(summaryData.RMSE < (meanRMSE - 3*sdRMSE)) = 0;
+summaryData.keepTrialYN(summaryData.RMSE > (meanRMSE + 3*sdRMSE)) = 0;
+
+% No more than 75% of trials sharing the same confidence response:
+confBias = max(mean(summaryData.conf==1), mean(summaryData.conf==-1));
+summaryData.passChecksYN = confBias <= 0.75;
+
+%% Export main-task file for further Matlab processing:
+disp('... Exporting mat file ...')
+fname = [dataToPath_matFiles, 'trialSummaryDataSPC.mat'];
+save(fname, 'summaryData')
+
+%% Export all eye data to csv for OSF:
+disp('... Exporting csv file ...')
+fname = [dataToPath_osfFiles, 'trialSummaryData.csv'];
+writetable(T,fname);
 
 end
