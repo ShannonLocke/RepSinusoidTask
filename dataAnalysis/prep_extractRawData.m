@@ -198,16 +198,21 @@ time_stimStop = sort(time_stimStop,'ascend'); % Make sure stimulus presentation 
 
 %% Extract the eye data:
 
-% Find recording eye:
-idx_eye = Data.Samples.gx(1,:) ~= Data.MISSING_DATA_VALUE;
-
 % Eye-related data:
 N = length(time_begin);
 eyePosX = cell([N,1]);
 eyePosY = cell([N,1]);
 pupilSize = cell([N,1]);
 for trial = 1:N % EACH trial
+    
+    % Find trial samples:
     idx_trial = Data.Samples.time >= time_begin(trial) &  Data.Samples.time <= time_stimStop(trial);
+    
+    % Find recording eye:
+    idx_sample1 = find(idx_trial); idx_sample1 = idx_sample1(1);
+    idx_eye = Data.Samples.gx(idx_sample1,:) ~= Data.MISSING_DATA_VALUE;
+    
+    % Get data:
     getX = Data.Samples.gx(idx_trial,idx_eye);
     getY = Data.Samples.gy(idx_trial,idx_eye);
     eyePosX{trial} = (getX - sCenter(1)) / pixPerDeg;
