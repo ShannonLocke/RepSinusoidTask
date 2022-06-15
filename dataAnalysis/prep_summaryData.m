@@ -157,9 +157,9 @@ end
 % Trials with RMSE >3SD or <-3SD from the mean:
 meanRMSE = repmat(mean(summaryData.RMSE),[N,1]);
 sdRMSE = repmat(std(summaryData.RMSE),[N,1]);
-summaryData.keepTrialYN = ones(size(summaryData.RMSE));
-summaryData.keepTrialYN(summaryData.RMSE < (meanRMSE - 3*sdRMSE)) = 0;
-summaryData.keepTrialYN(summaryData.RMSE > (meanRMSE + 3*sdRMSE)) = 0;
+summaryData.keepTrialYN = true(size(summaryData.RMSE));
+summaryData.keepTrialYN(summaryData.RMSE < (meanRMSE - 3*sdRMSE)) = false;
+summaryData.keepTrialYN(summaryData.RMSE > (meanRMSE + 3*sdRMSE)) = false;
 
 % No more than 75% of trials sharing the same confidence response:
 confBias = max(mean(summaryData.conf==1), mean(summaryData.conf==-1));
