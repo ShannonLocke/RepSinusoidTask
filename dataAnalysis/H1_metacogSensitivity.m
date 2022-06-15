@@ -58,14 +58,17 @@ for nn = 1:nSs % EACH subject
     end
     
     % Point estimate:
-    N = sum(~isnan(summaryData.conf(:,nn))); % number of trials
-    [AUROC(nn), pLow{nn}, pHigh{nn}, ~] = getAUROC(summaryData.RMSE(1:N,nn),summaryData.conf(1:N,nn));
+    idx_keep = summaryData.keepTrialYN(:,nn); % exclude outlier trials
+    N = sum(idx_keep); % number of trials
+    [AUROC(nn), pLow{nn}, pHigh{nn}, ~] = getAUROC(summaryData.RMSE(idx_keep,nn),summaryData.conf(idx_keep,nn));
     
     % Bootstrap 95% CIs:
     AUROC_BS = NaN([1,iterBS]);
     for ii = 1:iterBS
-        idx = randi(N,[N,1]); % randomly sample indices with replacement
-        AUROC_BS(ii) = getAUROC(summaryData.RMSE(idx,nn),summaryData.conf(idx,nn));
+        idx_rs = find(idx_keep); 
+        getSamples = randi(N,[N,1]); % randomly sample indices with replacement
+        idx_rs = idx_rs(getSamples); 
+        AUROC_BS(ii) = getAUROC(summaryData.RMSE(idx_rs,nn),summaryData.conf(idx_rs,nn));
     end
     CIs(nn,:) = prctile(AUROC_BS,[2.5, 97.5]);
     
@@ -82,14 +85,15 @@ for nn = 1:nSs % EACH subject
     
     % Histograms of confidence split error:
     subplot(2,1,1); hold on
+    idx_keep = summaryData.keepTrialYN(:,nn); % exclude outlier trials
     Err = summaryData.RMSE(:,nn);
-    mE = mean(Err);
+    mE = mean(Err(idx_keep));
     plot(mE * [1,1], [0,30], 'k--', 'Linewidth', 1, 'HandleVisibility','off') % mean error
-    cidx = (summaryData.conf(:,nn) == 1); % high confidence trials
+    cidx = idx_keep & summaryData.conf(:,nn) == 1; % high confidence trials
     histogram(Err(cidx), 'BinEdges', 0:0.1:5)
-    cidx = (summaryData.conf(:,nn) == -1); % low confidence trials
+    cidx = idx_keep & summaryData.conf(:,nn) == -1; % low confidence trials
     histogram(Err(cidx), 'BinEdges', 0:0.1:5)
-    title(['Error Distributions'])
+    title('Error Distributions')
     xlabel('Euclidean Error (deg)')
     ylabel('Frequency')
     xlim([0, 5])
@@ -116,14 +120,18 @@ end
 
 %% Summary statistics:
 
-% Remove uncalculable results:
-AUROC_all = AUROC;
-AUROC = AUROC(~isnan(AUROC));
+% Report summary statistics (all participants):
+meanAUROC_all = nanmean(AUROC);
+semAUROC_all = nanstd(AUROC)/sqrt(sum(~isnan(AUROC)));
+disp('FOR ALL PARTICIPANTS...')
+disp(['The AUROC mean & SEM is ' num2str(meanAUROC_all,2) '+/-' num2str(semAUROC_all,2)])
 
-% Report summary statistics:
-meanAUROC = num2str(mean(AUROC),2);
-semAUROC = num2str(std(AUROC)/sqrt(length(AUROC)),2);
-display(['The AUROC mean & SEM is ' meanAUROC '+/-' semAUROC])
+% Report summary statistics (exclude extreme bias):
+passCheck = summaryData.passChecksYN';
+meanAUROC_neb = mean(AUROC(passCheck));
+semAUROC_neb = std(AUROC(passCheck))/sqrt(sum(passCheck));
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp(['The AUROC mean & SEM is ' num2str(meanAUROC_neb,2) '+/-' num2str(semAUROC_neb,2)])
 
 %% Plot group results:
 
@@ -133,7 +141,7 @@ plot([0,1], [0,1], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
 for nn = 1:nSs
     plot(pLow{nn}, pHigh{nn}, 'Linewidth', 1)
 end
-title(['All Participants (AUROC: ' meanAUROC '\pm' semAUROC ')'])
+title(['All Participants (AUROC: ' num2str(meanAUROC_all,2) '\pm' num2str(semAUROC_all,2) ')'])
 xlabel('Cumulative P(RMSE | "worse")')
 ylabel('Cumulative P(RMSE | "better")')
 xticks(0:0.2:1)
@@ -145,25 +153,56 @@ set(gca,'linewidth',2);
 fname = [dataToPath_fig 'H1_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
+% Not extremely biased participant's quantile-quantile plots:
+fig = figure; hold on
+plot([0,1], [0,1], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+for nn = 1:nSs
+    if ~passCheck(nn); continue; end
+    plot(pLow{nn}, pHigh{nn}, 'Linewidth', 1)
+end
+title(['Not Extreme-Bias Participants (AUROC: ' num2str(meanAUROC_neb,2) '\pm' num2str(semAUROC_neb,2) ')'])
+xlabel('Cumulative P(RMSE | "worse")')
+ylabel('Cumulative P(RMSE | "better")')
+xticks(0:0.2:1)
+yticks(0:0.2:1)
+% legend(sIDs,'Location','southEast','Box','Off')
+axis square
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+fname = [dataToPath_fig 'H1_neb'];
+print(fig,fname,'-dpdf','-bestfit')
+
 %% Statistical test:
 
-disp('T-test results:...')
-[h,p,ci,stats] = ttest(AUROC-0.5)
-effectSize = stats.tstat/sqrt(length(AUROC));
-disp(['Effect size is ' num2str(effectSize,5)])
+% All participants:
+disp('FOR ALL PARTICIPANTS...')
+disp('The t-test results are...')
+[h_all,p_all,~,stats_all] = ttest(AUROC-0.5)
+effectSize_all = stats_all.tstat/sqrt(sum(~isnan(AUROC)));
+disp(['Effect size is ' num2str(effectSize_all,5)])
+
+% Exclude extreme bias:
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp('The t-test results are...')
+[h_neb,p_neb,~,stats_neb] = ttest(AUROC(passCheck)-0.5)
+effectSize_neb = stats.tstat/sqrt(sum(passCheck));
+disp(['Effect size is ' num2str(effectSize_neb,5)])
 
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID', AUROC_all, CIs(:,1), CIs(:,2), CIs(:,1)>0.5);
-T.Properties.VariableNames = {'subjectID', 'AUROC', 'lower95CI', 'upper95CI', 'SigAboveChance'};
+T = table(summaryData.sID', AUROC, CIs(:,1), CIs(:,2), CIs(:,1)>0.5, ~passCheck);
+T.Properties.VariableNames = {'subjectID', 'AUROC', 'lower95CI', 'upper95CI', ...
+    'SigAboveChance', 'ExtremeBias'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-T = table(mean(AUROC), std(AUROC)/sqrt(length(AUROC)), stats.tstat, stats.df, p, h, effectSize);
+T = table([meanAUROC_all; meanAUROC_neb], [semAUROC_all; semAUROC_neb], ...
+    [stats_all.tstat; stats_neb.tstat], [stats_all.df; stats_neb.df], ...
+    [p_all; p_neb], [h_all; h_neb], [effectSize_all; effectSize_neb], [0; 1]);
 T.Properties.VariableNames = {'meanAUROC', 'semAUROC', 'tStat', 'df', ...
-    'pVal', 'SigAboveChance', 'CohensD'};
+    'pVal', 'SigAboveChance', 'CohensD', 'ExcludeExtremeBias'};
 fname = [dataToPath_osfFiles 'H1_metacogSensitivity_groupResults.csv'];
 writetable(T,fname);
 
@@ -205,4 +244,5 @@ T = array2table(curvesAUROC);
 T.Properties.VariableNames = colNames;
 fname = ['data_AUROCs.txt'];
 writetable(T,fname,'Delimiter',' ')
+
 end
