@@ -41,17 +41,30 @@ pHigh = cell([nSs,6]);
 
 % Get temporal AUROCs:
 for nn = 1:nSs % EACH subject
-    N = sum(~isnan(summaryData.conf(:,nn))); % number of trials
-    conf = summaryData.conf(1:N,nn);
+    
+    % Check if AUROC can be computed (there is both low and high conf reports):
+    if all(summaryData.conf(:,nn)==1) || all(summaryData.conf(:,nn)==0)
+        AUROC(nn,:) = nan([1,6]);
+        for tt = 1:6 % EACH 1s time bin
+            pLow{nn,tt} = NaN;
+            pHigh{nn,tt} = NaN;
+        end
+        continue
+    end
+    
+    % Compute AUROCs:
+    idx_keep = summaryData.keepTrialYN(:,nn) & ~isnan(summaryData.RMSE(:,nn)); % exclude outlier/missing-data trials 
+    N = sum(idx_keep); % number of trials
+    conf = summaryData.conf(idx_keep,nn);
     for tt = 1:6 % EACH 1s time bin
-        RMSE = squeeze(summaryData.binnedRMSE(1:N,tt,nn));
+        RMSE = squeeze(summaryData.binnedRMSE(idx_keep,tt,nn));
         [AUROC(nn,tt), pLow{nn,tt}, pHigh{nn,tt}, ~] = getAUROC(RMSE,conf);
     end
+    
 end
 
-%% Plot results:
+%% Plot individual results:
 
-% Individual plots:
 colorVals = [linspace(0,1,6); zeros([1,6]); linspace(1,0,6)]';
 for nn = 1:nSs % EACH subject
     
@@ -95,6 +108,25 @@ for nn = 1:nSs % EACH subject
     
 end
 
+%% Summary statistics:
+
+% Report summary statistics (all participants):
+meanAUROC_all = nanmean(AUROC);
+semAUROC_all = nanstd(AUROC)/sqrt(sum(~isnan(AUROC(:,1))));
+disp('FOR ALL PARTICIPANTS...')
+disp(['The mean AUROCs for 1-6s are ' num2str(meanAUROC_all,2)])
+disp(['With SEMs of ' num2str(semAUROC_all,2)])
+
+% Report summary statistics (exclude extreme bias):
+passCheck = summaryData.passChecksYN';
+meanAUROC_neb = nanmean(AUROC(passCheck,:));
+semAUROC_neb = nanstd(AUROC(passCheck,:))/sqrt(sum(passCheck));
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp(['The mean AUROCs for 1-6s are ' num2str(meanAUROC_neb,2)])
+disp(['With SEMs of ' num2str(semAUROC_neb,2)])
+
+%% Plot group results: 
+
 % All participant's temporal plots:
 fig = figure; 
 subplot(2,1,1); hold on 
@@ -114,7 +146,7 @@ set(gca,'FontSize',16);
 set(gca,'linewidth',2);
 subplot(2,1,2); hold on
 plot([0,6], [0.5,0.5], 'k--', 'Linewidth', 1)
-errorbar(0.5:5.5, nanmean(AUROC,1), nanstd(AUROC,0,1)/sqrt(sum(~isnan(AUROC(:,1)))), 'ro-', ...
+errorbar(0.5:5.5, meanAUROC_all, semAUROC_all, 'ro-', ...
     'Linewidth', 2, 'MarkerFaceColor', 'r', 'MarkerSize', 10)
 title('Group Mean and SEM')
 xlabel('Time in Trial (sec)')
@@ -127,6 +159,108 @@ set(gca,'FontSize',16);
 set(gca,'linewidth',2);
 fname = [dataToPath_fig 'H3_all'];
 print(fig,fname,'-dpdf','-bestfit')
+
+% Not extremely biased participant's only:
+fig = figure; 
+subplot(2,1,1); hold on 
+plot([0,6], [0.5,0.5], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+for nn = 1:nSs
+    if ~passCheck(nn); continue; end
+    plot(0.5:5.5,AUROC(nn,:), 'Linewidth', 2)
+end
+title('Temporal Metacognitive Sensitivity Curves')
+xlabel('Time in Trial (sec)')
+ylabel('Metacognitive Sensitivity')
+xlim([0,6])
+ylim([0.2,1])
+xticks(0:6)
+yticks(0:0.2:1)
+% legend(sIDs,'Location','northWest','Box','Off')
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+subplot(2,1,2); hold on
+plot([0,6], [0.5,0.5], 'k--', 'Linewidth', 1)
+errorbar(0.5:5.5, meanAUROC_neb, semAUROC_neb, 'ro-', ...
+    'Linewidth', 2, 'MarkerFaceColor', 'r', 'MarkerSize', 10)
+title('Group Mean and SEM')
+xlabel('Time in Trial (sec)')
+ylabel('Metacognitive Sensitivity')
+xlim([0,6])
+ylim([0.4,1])
+xticks(0:6)
+yticks(0:0.2:1)
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+fname = [dataToPath_fig 'H3_neb'];
+print(fig,fname,'-dpdf','-bestfit')
+
+%% Difference in AUROC, last 2 sec versus middle 2 sec:
+
+splitHalfDiff_all = mean(AUROC(:,5:6),2) - mean(AUROC(:,3:4),2);
+splitHalfDiff_neb = mean(AUROC(passCheck,5:6),2) - mean(AUROC(passCheck,3:4),2);
+
+% All Participants:
+fig = figure; subplot(2,1,1); hold on
+plot([0,0], [0,10], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+histogram(splitHalfDiff_all,'BinEdges',-0.5:0.05:0.5)
+xlabel('Difference in AUROC (Last 2 sec - Middle 2 sec)')
+ylabel('Frequency')
+xlim([-0.5, 0.5])
+axis square
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+title('All Participants')
+sgtitle('Evidence for a Recency Effect','FontSize',18)
+
+% Not extremely biased participant's only:
+subplot(2,1,2); hold on
+plot([0,0], [0,10], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+histogram(splitHalfDiff_neb,'BinEdges',-0.5:0.05:0.5)
+xlabel('Difference in AUROC (Last 2 sec - Middle 2 sec)')
+ylabel('Frequency')
+xlim([-0.5, 0.5])
+axis square
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+title('Not Extreme-Bias Participants')
+fname = [dataToPath_fig 'H3_all_histogram'];
+print(fig,fname,'-dpdf','-bestfit')
+
+%% Statistical test:
+
+% All participants:
+disp('FOR ALL PARTICIPANTS...')
+disp('The t-test results are...')
+[h_all,p_all,~,stats_all] = ttest(splitHalfDiff_all)
+effectSize_all = stats_all.tstat/sqrt(sum(~isnan(splitHalfDiff_all)));
+disp(['Effect size is ' num2str(effectSize_all,5)])
+
+% Exclude extreme bias:
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp('The t-test results are...')
+[h_neb,p_neb,~,stats_neb] = ttest(splitHalfDiff_neb)
+effectSize_neb = stats_neb.tstat/sqrt(sum(passCheck));
+disp(['Effect size is ' num2str(effectSize_neb,5)])
+
+%% Prep summary data for OSF:
+
+% Individual results:
+T = table(summaryData.sID', AUROC(:,1), AUROC(:,2), AUROC(:,3), AUROC(:,4), ...
+    AUROC(:,5), AUROC(:,6));
+T.Properties.VariableNames = {'subjectID', 'AUROCsec1', 'AUROCsec2', ...
+    'AUROCsec3', 'AUROCsec4', 'AUROCsec5', 'AUROCsec6'};
+fname = [dataToPath_osfFiles 'H3_temporalAUROCs_indivResults.csv'];
+writetable(T,fname);
+
+% Group results:
+T = table([nanmean(splitHalfDiff_all); mean(splitHalfDiff_neb)], ...
+    [nanstd(splitHalfDiff_all)/sqrt(sum(~isnan(splitHalfDiff_all))); std(splitHalfDiff_neb)/sqrt(sum(passCheck))], ...
+    [stats_all.tstat; stats_neb.tstat], [stats_all.df; stats_neb.df], ...
+    [p_all; p_neb], [h_all; h_neb], [effectSize_all; effectSize_neb], [0; 1]);
+T.Properties.VariableNames = {'meanDiff', 'semDiff', 'tStat', 'df', ...
+    'pVal', 'SigAboveChance', 'CohensD', 'ExcludeExtremeBias'};
+fname = [dataToPath_osfFiles 'H3_temporalAUROCs_groupResults.csv'];
+writetable(T,fname);
 
 %% Investigate error mean and variance:
 
@@ -141,8 +275,8 @@ for nn = 1:nSs % EACH subject
     fname = [dataFromPath 'processed/processedEyeData_s' num2str(summaryData.sID(nn)) '.mat'];
     load(fname,'eyeDataPro')
     getError = eyeDataPro.errorEuclid;
-    errTrace_mean(:,nn) = mean(getError,2);
-    errTrace_sd(:,nn) = std(getError,0,2);
+    errTrace_mean(:,nn) = nanmean(getError,2);
+    errTrace_sd(:,nn) = nanstd(getError,0,2);
     t = eyeDataPro.t;
     
     % Plot mean error curve of individuals:
@@ -175,48 +309,5 @@ set(gca,'FontSize',16);
 set(gca,'linewidth',2);
 fname = [resDir 'errorTraces/errorTrace_all'];
 print(fig,fname,'-dpdf','-bestfit')
-
-%% Split-half difference in AUROC:
-
-splitHalfDiff = mean(AUROC(:,4:6),2) - mean(AUROC(:,1:3),2);
-
-% Histogram of split-half AUROC differences:
-fig = figure; hold on
-plot([0,0], [0,3], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
-histogram(splitHalfDiff,'BinEdges',-0.5:0.05:0.5)
-title(['Split-Half Difference in Metacognitive Sensitivity'])
-xlabel('Difference in AUROC (Last 2 sec - Middle 2 sec)')
-ylabel('Frequency')
-xlim([-0.5, 0.5])
-axis square
-set(gca,'FontSize',16);
-set(gca,'linewidth',2);
-fname = [dataToPath_fig 'H3_all_histogram'];
-print(fig,fname,'-dpdf','-bestfit')
-
-%% Statistical test:
-
-disp('T-test results:...')
-[h,p,ci,stats] = ttest(splitHalfDiff)
-effectSize = stats.tstat/sqrt(nSs);
-disp(['Effect size is ' num2str(effectSize,5)])
-
-%% Prep summary data for OSF:
-
-% Individual results:
-T = table(summaryData.sID', AUROC(:,1), AUROC(:,2), AUROC(:,3), AUROC(:,4), ...
-    AUROC(:,5), AUROC(:,6));
-T.Properties.VariableNames = {'subjectID', 'AUROCsec1', 'AUROCsec2', ...
-    'AUROCsec3', 'AUROCsec4', 'AUROCsec5', 'AUROCsec6'};
-fname = [dataToPath_osfFiles 'H3_temporalAUROCs_indivResults.csv'];
-writetable(T,fname);
-
-% Group results:
-T = table(mean(splitHalfDiff), std(splitHalfDiff)/sqrt(nSs), stats.tstat, ...
-    stats.df, p, h, effectSize);
-T.Properties.VariableNames = {'meanSHDiff', 'semSHDiff', 'tStat', 'df', ...
-    'pVal', 'SigAboveChance', 'CohensD'};
-fname = [dataToPath_osfFiles 'H3_temporalAUROCs_groupResults.csv'];
-writetable(T,fname);
 
 end
