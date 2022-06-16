@@ -8,3 +8,4 @@ node_modules/
 *.m~
 *.pdf
 results_SPC_TESTRUN_*.mat
+*.txt
