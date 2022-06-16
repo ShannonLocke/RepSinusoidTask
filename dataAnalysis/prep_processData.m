@@ -81,19 +81,25 @@ for nn = 1:nSs % EACH participant
         nsE = eyeData.nSamples(tt); % number of samples, eye data
         t_eye = linspace(0,6,nsE); % stretched time samples
         idx = ~isnan(eX{tt}); % find non-blink samples
-        get_eX = interp1(t_eye(idx), eX{tt}(idx), trajInfo.t_1000Hz);
-        get_eY = interp1(t_eye(idx), eY{tt}(idx), trajInfo.t_1000Hz);
-        if isnan(get_eX(1)) || isnan(get_eY(1)) % Correct missing beginning values 
-            warning(['Missing beginning values in trial ' num2str(tt) '.']);
-            idx = find(~isnan(get_eX)); idx = idx(1); % first non-nan
-            get_eX(1:idx) = get_eX(idx);
-            get_eY(1:idx) = get_eY(idx);
-        end
-        if isnan(get_eX(end)) || isnan(get_eY(end))
-            warning(['Missing end values in trial ' num2str(tt) '.']);
-            idx = find(~isnan(get_eX)); idx = idx(end); % last non-nan
-            get_eX(idx:end) = get_eX(idx);
-            get_eY(idx:end) = get_eY(idx);
+        if any(idx) % some valid samples
+            get_eX = interp1(t_eye(idx), eX{tt}(idx), trajInfo.t_1000Hz);
+            get_eY = interp1(t_eye(idx), eY{tt}(idx), trajInfo.t_1000Hz);
+            if isnan(get_eX(1)) || isnan(get_eY(1)) % Correct missing beginning values
+                warning(['Missing beginning values in trial ' num2str(tt) '.']);
+                idx = find(~isnan(get_eX)); idx = idx(1); % first non-nan
+                get_eX(1:idx) = get_eX(idx);
+                get_eY(1:idx) = get_eY(idx);
+            end
+            if isnan(get_eX(end)) || isnan(get_eY(end))% Correct missing end values
+                warning(['Missing end values in trial ' num2str(tt) '.']);
+                idx = find(~isnan(get_eX)); idx = idx(end); % last non-nan
+                get_eX(idx:end) = get_eX(idx);
+                get_eY(idx:end) = get_eY(idx);
+            end
+        else
+            warning(['No samples in trial ' num2str(tt) '.']);
+            get_eX = NaN(size(trajInfo.t_1000Hz));
+            get_eY = NaN(size(trajInfo.t_1000Hz));
         end
         eyeDataPro.eyeX(:,tt) = get_eX;
         eyeDataPro.eyeY(:,tt) = get_eY;

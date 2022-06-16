@@ -58,7 +58,7 @@ for nn = 1:nSs % EACH subject
     end
     
     % Point estimate:
-    idx_keep = summaryData.keepTrialYN(:,nn); % exclude outlier trials
+    idx_keep = summaryData.keepTrialYN(:,nn) & ~isnan(summaryData.RMSE(:,nn)); % exclude outlier/missing-data trials 
     N = sum(idx_keep); % number of trials
     [AUROC(nn), pLow{nn}, pHigh{nn}, ~] = getAUROC(summaryData.RMSE(idx_keep,nn),summaryData.conf(idx_keep,nn));
     
@@ -185,7 +185,7 @@ disp(['Effect size is ' num2str(effectSize_all,5)])
 disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
 disp('The t-test results are...')
 [h_neb,p_neb,~,stats_neb] = ttest(AUROC(passCheck)-0.5)
-effectSize_neb = stats.tstat/sqrt(sum(passCheck));
+effectSize_neb = stats_neb.tstat/sqrt(sum(passCheck));
 disp(['Effect size is ' num2str(effectSize_neb,5)])
 
 %% Prep summary data for OSF:

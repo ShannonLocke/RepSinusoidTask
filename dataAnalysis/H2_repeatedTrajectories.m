@@ -47,10 +47,12 @@ for nn = 1:nSs % EACH subject
         idx = tidx(:,nn) == tt;
         getErr = summaryData.RMSE(idx,nn);
         getConf = summaryData.conf(idx,nn)==1;
-        RMSE(tt,nn) = mean(getErr);
+        RMSE(tt,nn) = nanmean(getErr);
         conf(tt,nn) = mean(getConf);
         
         % Get statistics of median-split on performance:
+        % (trials in which there is no recorded samples will be classified
+        % as objectively worse half because sort places NaN values last).
         [~,midx] = sort(getErr); 
         midpt = length(midx)/2;
         idx = midx(1:midpt); % better 1/2 of trials
@@ -62,7 +64,7 @@ for nn = 1:nSs % EACH subject
 end
 
 % Determine trajectory difficulty ranking:
-zRMSE = (RMSE - repmat(mean(RMSE),[N,1]))./repmat(std(RMSE),[N,1]);
+zRMSE = (RMSE - repmat(nanmean(RMSE),[N,1]))./repmat(nanstd(RMSE),[N,1]);
 zRMSE_group = mean(zRMSE,2);
 [~,diffRank] = sort(zRMSE_group);
 
@@ -85,9 +87,9 @@ for nn = 1:nSs % EACH subject
     title('Performance')
     xlabel('Ranked trajectory')
     ylabel('RMSE (deg)')
-    yticks(0:0.5:3)
+    yticks(0:0.5:3.5)
     xlim([0,(N+1)])
-    ylim([0,3])
+    ylim([0,3.5])
     set(gca,'FontSize',14);
     set(gca,'linewidth',2);
     
@@ -245,12 +247,37 @@ axis square
 fname = [dataToPath_fig 'H2_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
+%% Summary statistics:
+
+% Report summary statistics (all participants):
+meanDiff_all = mean(avgDiffConf);
+semDiff_all = std(avgDiffConf)/sqrt(length(avgDiffConf));
+disp('FOR ALL PARTICIPANTS...')
+disp(['The confidence difference mean & SEM is ' num2str(meanDiff_all,4) '+/-' num2str(semDiff_all,4)])
+
+% Report summary statistics (exclude extreme bias):
+passCheck = summaryData.passChecksYN';
+meanDiff_neb = mean(avgDiffConf(passCheck));
+semDiff_neb = std(avgDiffConf(passCheck))/sqrt(sum(passCheck));
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp(['The confidence difference mean & SEM is ' num2str(meanDiff_neb,24) '+/-' num2str(semDiff_neb,4)])
+
 %% Statistical test:
 
-disp('T-test results:...')
-[h,p,ci,stats] = ttest(avgDiffConf)
-effectSize = stats.tstat/sqrt(nSs);
-disp(['Effect size is ' num2str(effectSize,5)])
+% All participants:
+disp('FOR ALL PARTICIPANTS...')
+disp('The t-test results:...')
+[h_all,p_all,~,stats_all] = ttest(avgDiffConf)
+effectSize_all = stats_all.tstat/sqrt(nSs);
+disp(['Effect size is ' num2str(effectSize_all,5)])
+
+% Exclude extreme bias:
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp('The t-test results are...')
+passCheck = summaryData.passChecksYN;
+[h_neb,p_neb,~,stats_neb] = ttest(avgDiffConf(passCheck))
+effectSize_neb = stats_neb.tstat/sqrt(sum(passCheck));
+disp(['Effect size is ' num2str(effectSize_neb,5)])
 
 %% Prep summary data for OSF:
 
@@ -266,10 +293,11 @@ fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_indivResults.csv'];
 writetable(T,fname);
  
 % Group results:
-T = table(mean(avgDiffConf), std(avgDiffConf)/sqrt(nSs), stats.tstat, ...
-    stats.df, p, h, effectSize);
+T = table([meanDiff_all; meanDiff_neb], [semDiff_all; semDiff_neb], ...
+    [stats_all.tstat; stats_neb.tstat], [stats_all.df; stats_neb.df], ...
+    [p_all; p_neb], [h_all; h_neb], [effectSize_all; effectSize_neb], [0; 1]);
 T.Properties.VariableNames = {'meanConfDiff', 'semConfDiff', 'tStat', ...
-    'df', 'pVal', 'SigAboveChance', 'CohensD'};
+    'df', 'pVal', 'SigAboveChance', 'CohensD', 'ExcludeExtremeBias'};
 fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_groupResults.csv'];
 writetable(T,fname);
 
@@ -280,4 +308,5 @@ semVals = std(diffConf(diffRank,:),0,2)/sqrt(nSs);
 T = table(y, barVals, semVals);
 fname = ['data_repeatedTrajectories.txt'];
 writetable(T,fname,'Delimiter',' ')
+
 end
