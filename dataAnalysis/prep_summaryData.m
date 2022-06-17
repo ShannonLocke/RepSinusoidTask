@@ -32,7 +32,7 @@ end
 dataFromPath_eye = [resDir 'processed/'];
 dataToPath_matFiles = resDir;
 dataToPath_osfFiles = [resDir 'forOSF/'];
-tableVarNamesForOSF = {'subjectID', 'session', 'trainingYN', 'trial', ...
+tableVarNamesForOSF = {'subjectID', 'session', 'trial', ...
     'directionSignedTrajectoryID', 'confidence', 'RT', 'RMSE', ...
     'RMSEsec1', 'RMSEsec2', 'RMSEsec3', 'RMSEsec4', 'RMSEsec5', ...
         'RMSEsec6'};
@@ -107,35 +107,9 @@ for nn = 1:nSs % EACH participant
         end
     end
     
-    % Create table of training  data for OSF csv:
-    trajectory_training = cell2mat(expData.expDesign.designMat(idxR)');
-    trajectory_training = trajectory_training(:,1) .* trajectory_training(:,2);
-    tmpT = table(sID*ones([N_training,1]), ... % subjectID
-        repelem((1:nSessions), nTrainTrials)', ... % session
-        ones([N_training,1]), ... % trainingYN
-        repmat((1:nTrainTrials)', [nSessions,1]), ... % trial
-        trajectory_training, ... % trajectory signed by direction
-        NaN([N_training,1]), ... % confidence
-        NaN([N_training,1]), ... % RT
-        NaN([N_training,1]), ... % RMSE <== not computed because unused
-        NaN([N_training,1]), ... % RMSE in 1 sec bins
-        NaN([N_training,1]), ... % ...
-        NaN([N_training,1]), ... % ...
-        NaN([N_training,1]), ... % ...
-        NaN([N_training,1]), ... % ...
-        NaN([N_training,1])); % RMSE in 1 sec bins
-    tmpT.Properties.VariableNames = tableVarNamesForOSF;
-    if nn == 1
-        T = tmpT;
-        % T.Properties.VariableNames = tableVarNamesForOSF;
-    else
-        T = [T; tmpT];
-    end
-    
     % Create table of test eye data for OSF csv:
     tmpT = table(sID*ones([N,1]), ... % subjectID
         summaryData.session(1:N,nn), ... % session
-        zeros([N,1]), ... % trainingYN
         summaryData.trial(1:N,nn), ... % trial
         summaryData.trajectory(1:N,nn), ... % trajectory signed by direction
         summaryData.conf(1:N,nn), ... % confidence
@@ -148,7 +122,11 @@ for nn = 1:nSs % EACH participant
         summaryData.binnedRMSE(1:N,5,nn), ... % ...
         summaryData.binnedRMSE(1:N,6,nn)); % RMSE in 1 sec bins
     tmpT.Properties.VariableNames = tableVarNamesForOSF;
-    T = [T; tmpT];
+    if nn == 1
+        T = tmpT;
+    else
+        T = [T; tmpT];
+    end
     
 end
 
