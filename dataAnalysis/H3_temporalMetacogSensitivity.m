@@ -246,9 +246,9 @@ disp(['Effect size is ' num2str(effectSize_neb,5)])
 
 % Individual results:
 T = table(summaryData.sID', AUROC(:,1), AUROC(:,2), AUROC(:,3), AUROC(:,4), ...
-    AUROC(:,5), AUROC(:,6));
+    AUROC(:,5), AUROC(:,6), ~passCheck);
 T.Properties.VariableNames = {'subjectID', 'AUROCsec1', 'AUROCsec2', ...
-    'AUROCsec3', 'AUROCsec4', 'AUROCsec5', 'AUROCsec6'};
+    'AUROCsec3', 'AUROCsec4', 'AUROCsec5', 'AUROCsec6', 'ExtremeBias'};
 fname = [dataToPath_osfFiles 'H3_temporalAUROCs_indivResults.csv'];
 writetable(T,fname);
 

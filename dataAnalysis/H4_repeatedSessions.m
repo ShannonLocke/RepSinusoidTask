@@ -30,6 +30,7 @@ fname = [dataFromPath, 'trialSummaryDataSPC.mat'];
 load(fname, 'summaryData'); 
 nSs = length(summaryData.sID);
 sIDs = strsplit(num2str(summaryData.sID));
+passCheck = summaryData.passChecksYN;
 
 %% Compute AUROCs:
 
@@ -79,11 +80,11 @@ for nn = 1:nSs % EACH subject
     print(fig,fname,'-dpdf','-bestfit')
 end
 
-% Histogram of AUROC differences:
+% Histogram of AUROC differences (all participants):
 fig = figure; hold on
 plot([0,0], [0,3], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
 histogram(sessionEffect,'BinEdges',-0.5:0.05:0.5)
-title(['Session Effect in Sample Population'])
+title(['Session Effect (All Particiants)'])
 xlabel('Difference in AUROC (Session 2 - Session 1)')
 ylabel('Frequency')
 xlim([-0.5, 0.5])
@@ -93,22 +94,65 @@ set(gca,'linewidth',2);
 fname = [dataToPath_fig 'H4_all'];
 print(fig,fname,'-dpdf','-bestfit')
 
-%% Statistical test:
+% Histogram of AUROC differences (all participants):
+fig = figure; hold on
+plot([0,0], [0,3], 'k--', 'Linewidth', 1, 'HandleVisibility','off')
+histogram(sessionEffect(passCheck),'BinEdges',-0.5:0.05:0.5)
+title(['Session Effect (Exclude Extremely Biased)'])
+xlabel('Difference in AUROC (Session 2 - Session 1)')
+ylabel('Frequency')
+xlim([-0.5, 0.5])
+axis square
+set(gca,'FontSize',16);
+set(gca,'linewidth',2);
+fname = [dataToPath_fig 'H4_neb'];
+print(fig,fname,'-dpdf','-bestfit')
 
-disp('T-test results:...')
-[h,p,ci,stats] = ttest(sessionEffect)
+%% Statistical tests:
+
+% All participants:
+disp('FOR ALL PARTICIPANTS...')
+disp('The t-test results are...')
+[h_all,p_all,~,stats_all] = ttest(sessionEffect)
+effectSize_all = stats_all.tstat/sqrt(sum(~isnan(sessionEffect)));
+disp(['Effect size is ' num2str(effectSize_all,5)])
+
+% Exclude extreme bias:
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp('The t-test results are...')
+[h_neb,p_neb,~,stats_neb] = ttest(sessionEffect(passCheck))
+effectSize_neb = stats_neb.tstat/sqrt(sum(passCheck));
+disp(['Effect size is ' num2str(effectSize_neb,5)])
+
+%% Summary statistics:
+
+% Report summary statistics (all participants):
+meanSE_all = nanmean(sessionEffect);
+semSE_all = nanstd(sessionEffect)/sqrt(sum(~isnan(sessionEffect)));
+disp('FOR ALL PARTICIPANTS...')
+disp(['The session effect mean & SEM is ' num2str(meanSE_all,2) '+/-' num2str(semSE_all,2)])
+
+% Report summary statistics (exclude extreme bias):
+passCheck = summaryData.passChecksYN';
+meanSE_neb = mean(sessionEffect(passCheck));
+semSE_neb = std(sessionEffect(passCheck))/sqrt(sum(passCheck));
+disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
+disp(['The session effect mean & SEM is ' num2str(meanSE_neb,2) '+/-' num2str(semSE_neb,2)])
 
 %% Prep summary data for OSF:
 
 % Individual results:
-T = table(summaryData.sID', AUROC(:,1), AUROC(:,2));
-T.Properties.VariableNames = {'subjectID', 'session1AUROC', 'session2AUROC'};
+T = table(summaryData.sID', AUROC(:,1), AUROC(:,2), ~passCheck);
+T.Properties.VariableNames = {'subjectID', 'session1AUROC', 'session2AUROC', 'ExtremeBias'};
 fname = [dataToPath_osfFiles 'H4_sessionEffect_indivResults.csv'];
 writetable(T,fname);
 
 % Group results:
-T = table(mean(sessionEffect), std(sessionEffect)/sqrt(nSs), stats.tstat, stats.df, p, h);
-T.Properties.VariableNames = {'meanDiffAUROC', 'semDiffAUROC', 'tStat', 'df', 'pVal', 'SigAboveChance'};
+T = table([meanSE_all; meanSE_neb], [semSE_all; semSE_neb], ...
+    [stats_all.tstat; stats_neb.tstat], [stats_all.df; stats_neb.df], ...
+    [p_all; p_neb], [h_all; h_neb], [effectSize_all; effectSize_neb], [0; 1]);
+T.Properties.VariableNames = {'meanSessionEffect', 'semSessionEffect', ...
+    'tStat', 'df', 'pVal', 'SigAboveChance', 'CohensD', 'ExcludeExtremeBias'};
 fname = [dataToPath_osfFiles 'H4_sessionEffect_groupResults.csv'];
 writetable(T,fname);
 
