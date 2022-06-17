@@ -260,7 +260,7 @@ passCheck = summaryData.passChecksYN';
 meanDiff_neb = mean(avgDiffConf(passCheck));
 semDiff_neb = std(avgDiffConf(passCheck))/sqrt(sum(passCheck));
 disp('EXCLUDING EXTREMELY BIASED PARTICIPANTS...')
-disp(['The confidence difference mean & SEM is ' num2str(meanDiff_neb,24) '+/-' num2str(semDiff_neb,4)])
+disp(['The confidence difference mean & SEM is ' num2str(meanDiff_neb,4) '+/-' num2str(semDiff_neb,4)])
 
 %% Statistical test:
 
@@ -297,7 +297,7 @@ T = table([meanDiff_all; meanDiff_neb], [semDiff_all; semDiff_neb], ...
     [stats_all.tstat; stats_neb.tstat], [stats_all.df; stats_neb.df], ...
     [p_all; p_neb], [h_all; h_neb], [effectSize_all; effectSize_neb], [0; 1]);
 T.Properties.VariableNames = {'meanConfDiff', 'semConfDiff', 'tStat', ...
-    'df', 'pVal', 'SigAboveChance', 'CohensD', 'ExcludeExtremeBias'};
+    'df', 'pVal', 'Sig', 'CohensD', 'ExcludeExtremeBias'};
 fname = [dataToPath_osfFiles 'H2_repeatedTrajectories_groupResults.csv'];
 writetable(T,fname);
 
