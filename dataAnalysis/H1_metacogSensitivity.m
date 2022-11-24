@@ -223,7 +223,7 @@ for ii = 1:length(pLow)
 end
 
 % Get group average curve:
-equiv_dPrime = norminv(mean(AUROC)) * sqrt(2); % equivalent d' for the mean AUROC
+equiv_dPrime = norminv(nanmean(AUROC)) * sqrt(2); % equivalent d' for the mean AUROC
 xvals = linspace(-3,3,maxLengthCell)'; % set sampling spacing to fit current matrix
 curvesAUROC(:,idx_low+2) = normcdf(xvals-equiv_dPrime/2); % ``worse'' distribution cumulative value
 curvesAUROC(:,idx_high+2) = normcdf(xvals+equiv_dPrime/2); % ``better'' distribution cumulative value
